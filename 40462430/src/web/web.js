@@ -1,9 +1,22 @@
 import express from 'express';
 import axios from 'axios';
-// import sessions from 'express-session';
+import session from 'express-session';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.WEB_PORT;
+
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: false, // HTTP 
+        maxAge: 1000 * 60 * 60 // 1 hour
+
+    }
+}));
 
 import path from "path";
 import { fileURLToPath } from "url";
