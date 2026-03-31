@@ -35,12 +35,34 @@ web.use((req, res, next) => {
     next();
 });
 
-web.get("/", async (req, res) => {
+const isAuthenticated = (req, res, next) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    next();
+};
+
+const isAdmin = (req, res, next) => {
+    if (req.session.user.role !== 'admin') {
+        return res.redirect('/login');
+    }
+    next();
+};
+
+const isOfficer = (req, res, next) => {
+    if (req.session.user.role !== 'officer') {
+        return res.redirect('/login');
+    }
+    next();
+};
+
+
+web.get("/", (req, res) => {
     res.redirect("/login");
 });
 
 // User login functions as the web landing page if not logged in. so root redirects to it.
-web.get('/login', async (req, res) => {
+web.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
@@ -57,9 +79,12 @@ web.post('/login', async (req, res) => {
         if (authResult.data.user.role === 'admin') {
             console.log('Admin login successful');
             res.redirect('/admin/dashboard');
-        } else {
+        } else if (authResult.data.user.role === 'officer') {
             console.log('Officer login successful');
             res.redirect('/officer/dashboard');
+        } else {
+            console.log('Invalid role login attempt');
+            res.status(403).send('Access denied');
         }
     } catch (error) {
         console.error('Login error:', error.message);
@@ -67,10 +92,7 @@ web.post('/login', async (req, res) => {
     }
 });
 
-web.get('/dashboard', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
+web.get('/dashboard', isAuthenticated, (req, res) => {
 
     if (req.session.user.role === 'admin') {
         res.redirect('/admin/dashboard');
@@ -81,31 +103,24 @@ web.get('/dashboard', async (req, res) => {
     }
 });
 
-web.get('/admin/dashboard', async (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-        return res.status(403).send('Access denied');
-        res.redirect('/login');
-    }
+web.get('/admin/dashboard', isAuthenticated, isAdmin, (req, res) => {
     res.render('admin/dashboard');
 });
 
-web.get('/officer/dashboard', async (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'officer') {
-        return res.status(403).send('Access denied');
-        res.redirect('/login');
-    }
+web.get('/officer/dashboard', isAuthenticated, isOfficer, (req, res) => {
     res.render('officer/dashboard');
 });
 
 web.get('/logout', (req, res) => {
     req.session.destroy();
-    res.redirect('/login');
     console.log('User logged out successfully');
+    res.redirect('/login');
+
 });
 
 /*
 app.get("/dashboard", async (req, res) => {
-
+ 
     const ep = 'http://localhost:5000/getallstores';
     const apiResult = await axios.get(ep);
     const stores = apiResult.data.stores;
