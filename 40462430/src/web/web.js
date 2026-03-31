@@ -283,23 +283,42 @@ web.get('/admin/assignments-new', isAuthenticated, isAdmin, async (req, res) => 
         res.render('admin/assignments-new', { officers, programmes, error: null });
     } catch (error) {
         console.error('Error fetching form data:', error.message);
-        res.redirect('/admin/assignments-new', { error: 'Error fetching form data' });
+        res.render('admin/assignments-new', {
+            officers: [],
+            programmes: [],
+            error: 'Error fetching form data'
+        });
     }
 });
 
 web.post('/admin/assignments', isAuthenticated, isAdmin, async (req, res) => {
     const { officer_id, programme_id } = req.body;
+
     if (!officer_id || !programme_id) {
-        return res.redirect('/admin/assignments-new', { error: 'All fields are required' });
+        const formDataResponse = await axios.get(`${process.env.API_URL}/assignments/form-data`);
+        return res.render('admin/assignments-new', {
+            officers: formDataResponse.data.officers,
+            programmes: formDataResponse.data.programmes,
+            error: 'All fields are required'
+        });
     };
-    
+
     try {
         await axios.post(`${process.env.API_URL}/assignments`, { officer_id, programme_id, assigned_by: req.session.user.id });
-        res.redirect('/admin/assignments');
         console.log('Assignment created successfully');
+        res.redirect('/admin/assignments');
     } catch (error) {
         console.error('Error creating assignment:', error.message);
-        res.redirect('/admin/assignments-new', { error: 'Error creating assignment' });
+        const errorMessage = error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Error creating assignment';
+
+        const formDataResponse = await axios.get(`${process.env.API_URL}/assignments/form-data`);
+        res.render('admin/assignments-new', {
+            officers: formDataResponse.data.officers,
+            programmes: formDataResponse.data.programmes,
+            error: errorMessage
+        });
     }
 });
 

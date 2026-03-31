@@ -268,9 +268,23 @@ api.get('/assignments/form-data', async (req, res) => {
 });
 
 // API endpoint to add a new assignment
+// Validation to prevent duplicate active assignments for the same officer and programme 
+// and bug fix added for inactive assignments from unique constraint on active assignments only
 api.post('/assignments', async (req, res) => {
     const { officer_id, programme_id, assigned_by } = req.body;
     try {
+
+        const [existing] = await db.promise().query(
+            `SELECT id FROM officer_assignments 
+            WHERE officer_id = ? 
+            AND programme_id = ? AND is_active = 1`,
+            [officer_id, programme_id]
+        );
+
+        if (existing.length > 0) {
+            return res.status(409).json({ error: 'This officer is already assigned to this programme' });
+        }
+
         await db.promise().query(
             `INSERT INTO officer_assignments (officer_id, programme_id, assigned_by) 
             VALUES (?, ?, ?)`,
@@ -279,6 +293,12 @@ api.post('/assignments', async (req, res) => {
         res.status(201).json({ message: 'Assignment added successfully' });
     } catch (error) {
         console.error('Error creating assignment:', error.message);
+        const errorMessage = error.response && error.response.data && error.response.data.error ? error.response.data.error : 'Error creating assignment';
+        res.render('admin/assignments-new', {
+            officers: [],
+            programmes: [],
+            error: 'errorMessage'
+        });
         res.status(500).json({ error: 'Error adding assignment' });
     }
 });
