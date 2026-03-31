@@ -41,7 +41,7 @@ web.get("/", async (req, res) => {
 
 // User login functions as the web landing page if not logged in. so root redirects to it.
 web.get('/login', async (req, res) => {
-    res.render('login', { title: 'Login', error: null });
+    res.render('login', { error: null });
 });
 
 
@@ -63,14 +63,22 @@ web.post('/login', async (req, res) => {
         }
     } catch (error) {
         console.error('Login error:', error.message);
-        res.render('login', { title: 'Login', error: 'Invalid email or password' });
+        res.render('login', { error: 'Invalid email or password' });
     }
 });
 
-web.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login');
-    console.log('User logged out successfully');
+web.get('/dashboard', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+
+    if (req.session.user.role === 'admin') {
+        res.redirect('/admin/dashboard');
+    } else if (req.session.user.role === 'officer') {
+        res.redirect('/officer/dashboard');
+    } else {
+        res.status(403).send('Access denied');
+    }
 });
 
 web.get('/admin/dashboard', async (req, res) => {
@@ -78,7 +86,7 @@ web.get('/admin/dashboard', async (req, res) => {
         return res.status(403).send('Access denied');
         res.redirect('/login');
     }
-    res.render('dashboard', { title: 'Admin Dashboard' });
+    res.render('admin/dashboard');
 });
 
 web.get('/officer/dashboard', async (req, res) => {
@@ -86,7 +94,13 @@ web.get('/officer/dashboard', async (req, res) => {
         return res.status(403).send('Access denied');
         res.redirect('/login');
     }
-    res.render('dashboard', { title: 'Officer Dashboard' });
+    res.render('officer/dashboard');
+});
+
+web.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+    console.log('User logged out successfully');
 });
 
 /*
