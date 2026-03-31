@@ -67,6 +67,23 @@ api.get('/officers', async (req, res) => {
     }
 });
 
+// API endpoint to create a new officer
+
+api.post('/officers', async (req, res) => {
+        const { email, first_name, surname, password } = req.body;
+        try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await db.promise().query(
+                'INSERT INTO users (email, first_name, surname, password, role) VALUES (?, ?, ?, ?, ?)',
+                [email, first_name, surname, hashedPassword, 'officer']
+            );
+            res.status(201).json({ message: 'Officer created successfully' });
+        } catch (error) {
+            console.error('Error creating officer:', error.message);
+            res.status(500).json({ error: 'Error creating officer' });
+        }
+});
+
 api.listen(PORT, () => {
     console.log(`API is running on port ${PORT}`);
 });

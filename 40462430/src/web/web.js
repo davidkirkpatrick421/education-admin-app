@@ -77,7 +77,7 @@ web.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const authResult = await axios.post(`${process.env.API_BASE_URL}/login`, { email, password });
+        const authResult = await axios.post(`${process.env.API_URL}/login`, { email, password });
 
         req.session.user = authResult.data.user;
 
@@ -110,13 +110,15 @@ web.get('/dashboard', isAuthenticated, (req, res) => {
     }
 });
 
+// Admin dashboard routes
+
 web.get('/admin/dashboard', isAuthenticated, isAdmin, (req, res) => {
     res.render('admin/dashboard');
 });
 
 web.get('/admin/officers', isAuthenticated, isAdmin, async (req, res) => {
     try {
-        const response = await axios.get(`${process.env.API_BASE_URL}/officers`);
+        const response = await axios.get(`${process.env.API_URL}/officers`);
         const officerData = response.data.officers;
         res.render('admin/officers', { officers: officerData });
     } catch (error) {
@@ -125,7 +127,31 @@ web.get('/admin/officers', isAuthenticated, isAdmin, async (req, res) => {
     }
 });
 
+web.get('/admin/officers/new', isAuthenticated, isAdmin, (req, res) => {
+    res.render('admin/officers-add-new', { error: null });
+});
 
+web.post('/admin/officers', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const { email, first_name, surname, password } = req.body;
+
+        if (!email || !first_name || !surname || !password) {
+            return res.render('admin/officers-add-new', { error: 'All fields are required' });
+        };
+
+        if (password.length < 8) {
+            return res.render('admin/officers-add-new', { error: 'Password must be at least 8 characters' });
+        };
+        
+        await axios.post(`${process.env.API_URL}/officers`, req.body); 
+        res.redirect('/admin/officers');
+    } catch (error) {
+        console.error('Error creating officer:', error.message);
+        res.render('admin/officers-add-new', { error: 'Error creating officer' });
+    }
+});
+
+// Officer dashboard routes 
 
 web.get('/officer/dashboard', isAuthenticated, isOfficer, (req, res) => {
     res.render('officer/dashboard');
