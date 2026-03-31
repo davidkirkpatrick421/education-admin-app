@@ -57,7 +57,7 @@ api.post('/login', async (req, res) => {
 api.get('/officers', async (req, res) => {
     try {
         const [rows] = await db.promise().query(
-            'SELECT email, first_name, surname, is_active, created_at FROM users WHERE role = ?',
+            'SELECT id, email, first_name, surname, is_active, created_at FROM users WHERE role = ?',
             ['officer']
         );
         res.json({ officers: rows });
@@ -83,6 +83,77 @@ api.post('/officers', async (req, res) => {
             res.status(500).json({ error: 'Error creating officer' });
         }
 });
+
+// API endpoint to fetch officer details by id for editing
+
+api.get('/officers/:id', async (req, res) => {
+    const officerId = req.params.id;
+    try {
+        const [rows] = await db.promise().query(
+            'SELECT id, email, first_name, surname, is_active FROM users WHERE id = ? AND role = ?',
+            [officerId, 'officer']
+        );
+    
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Officer not found' });
+        }
+        res.json({ officer: rows[0] });
+    } catch (error) {
+        console.error('Error fetching officer details:', error.message);
+        res.status(500).json({ error: 'Error fetching officer details' });
+    }
+});
+
+// API endpoint to update officer details
+
+api.post('/officers/:id/edit', async (req, res) => {
+    const { email, first_name, surname } = req.body;
+    const officerId = req.params.id;
+    
+    try {
+        await db.promise().query(
+            'UPDATE users SET email = ?, first_name = ?, surname = ? WHERE id = ? AND role = ?',
+            [email, first_name, surname, officerId, 'officer']
+        );
+        res.json({ message: 'Officer updated successfully' });
+    } catch (error) {
+        console.error('Error updating officer:', error.message);
+        res.status(500).json({ error: 'Error updating officer' });
+    }
+});
+
+// API endpoint to deactivate an officer
+
+api.post('/officers/:id/deactivate', async (req, res) => {
+    const officerId = req.params.id;
+    try {
+        await db.promise().query(
+            'UPDATE users SET is_active = 0 WHERE id = ? AND role = ?',
+            [officerId, 'officer']
+        );
+        res.json({ message: 'Officer deactivated successfully' });
+    } catch (error) {
+        console.error('Error deactivating officer:', error.message);
+        res.status(500).json({ error: 'Error deactivating officer' });
+    }
+});
+
+// API endpoint to reactivate an officer
+
+api.post('/officers/:id/reactivate', async (req, res) => {
+    const officerId = req.params.id;
+    try {
+        await db.promise().query(
+            'UPDATE users SET is_active = 1 WHERE id = ? AND role = ?',
+            [officerId, 'officer']
+        );
+        res.json({ message: 'Officer reactivated successfully' });
+    } catch (error) {
+        console.error('Error reactivating officer:', error.message);
+        res.status(500).json({ error: 'Error reactivating officer' });
+    }
+});
+
 
 api.listen(PORT, () => {
     console.log(`API is running on port ${PORT}`);

@@ -142,14 +142,67 @@ web.post('/admin/officers', isAuthenticated, isAdmin, async (req, res) => {
         if (password.length < 8) {
             return res.render('admin/officers-add-new', { error: 'Password must be at least 8 characters' });
         };
-        
-        await axios.post(`${process.env.API_URL}/officers`, req.body); 
+
+        await axios.post(`${process.env.API_URL}/officers`, req.body);
         res.redirect('/admin/officers');
     } catch (error) {
         console.error('Error creating officer:', error.message);
         res.render('admin/officers-add-new', { error: 'Error creating officer' });
     }
 });
+
+web.get('/admin/officers/:id/edit', isAuthenticated, isAdmin, async (req, res) => {
+    const officerId = req.params.id;
+    try {
+        const editResponse = await axios.get(`${process.env.API_URL}/officers/${officerId}`);
+        res.render('admin/officers-edit', { officer: editResponse.data.officer, error: null });
+    } catch (error) {
+        console.error('Error fetching officer:', error.message);
+        res.redirect('/admin/officers');
+    }
+});
+
+web.post('/admin/officers/:id/edit', isAuthenticated, isAdmin, async (req, res) => {
+    const { email, first_name, surname } = req.body;
+    const officerId = req.params.id;
+
+    if (!email || !first_name || !surname) {
+        const editResponse = await axios.get(`${process.env.API_URL}/officers/${officerId}/edit`, req.body);
+        return res.render('admin/officers-edit', { officer: editResponse.data.officer, error: 'All fields are required' });
+    };
+
+    try {
+        await axios.post(`${process.env.API_URL}/officers/${officerId}/edit`, req.body);
+        res.redirect('/admin/officers');
+
+    } catch (error) {
+        console.error('Error updating officer:', error.message);
+        res.render('admin/officers-edit', { error: 'Error updating officer' });
+    }
+});
+
+web.post('/admin/officers/:id/deactivate', isAuthenticated, isAdmin, async (req, res) => {
+    const officerId = req.params.id;
+    try {
+        await axios.post(`${process.env.API_URL}/officers/${officerId}/deactivate`);
+        res.redirect('/admin/officers');
+    } catch (error) {
+        console.error('Error deactivating officer:', error.message);
+        res.redirect('/admin/officers');
+    }
+});
+
+web.post('/admin/officers/:id/reactivate', isAuthenticated, isAdmin, async (req, res) => {
+    const officerId = req.params.id;
+    try {
+        await axios.post(`${process.env.API_URL}/officers/${officerId}/reactivate`);
+        res.redirect('/admin/officers');
+    } catch (error) {
+        console.error('Error reactivating officer:', error.message);
+        res.redirect('/admin/officers');
+    }
+});
+
 
 // Officer dashboard routes 
 

@@ -1,29 +1,43 @@
 <%- include('../partials/head', { title: 'Officers' }) %>
-<%- include('../partials/nav') %>
-<h1>Officers</h1>
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th>Email</th>
-            <th>First Name</th>
-            <th>Surname</th>
-            <th>Is Active</th>
-            <th>Created At</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% officers.forEach(officer => { %>
-        <tr>
-            <td><%= officer.email %></td>
-            <td><%= officer.first_name %></td>
-            <td><%= officer.surname %></td>
-            <td> <% if (officer.is_active) { %> Yes <% } else { %> No <% } %> </td>
-            <td><%= officer.created_at %></td>
-        </tr>
-        <% }); %>
-    </tbody>
-</table>
+    <%- include('../partials/nav') %>
+        <h1>Officers</h1>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>First Name</th>
+                    <th>Surname</th>
+                    <th>Is Active</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% officers.forEach(officer=> { %>
+                    <tr>
+                        <td>
+                            <%= officer.email %>
+                        </td>
+                        <td>
+                            <%= officer.first_name %>
+                        </td>
+                        <td>
+                            <%= officer.surname %>
+                        </td>
+                        <td>
+                            <% if (officer.is_active) { %> Yes <% } else { %> No <% } %>
+                        </td>
+                        <td>
+                            <%= new Date(officer.created_at).toLocaleDateString('en-GB') %>
+                        </td>
+                        <td>
+                            <a href="/admin/officers/<%= officer.id %>/edit"
+                                class="btn btn-sm btn-outline-primary">Edit</a>
+                        </td>
+                    </tr>
+                    <% }); %>
+            </tbody>
+        </table>
 
-<a href="/admin/officers/new" class="btn btn-primary">Add Officer</a>
+        <a href="/admin/officers/new" class="btn btn-primary">Add Officer</a>
 
-<%- include('../partials/footer') %>
+        <%- include('../partials/footer') %>
