@@ -4,14 +4,14 @@ import session from 'express-session';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const app = express();
+const web = express();
 const PORT = process.env.WEB_PORT;
 
-app.use(session({
+web.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { 
+    cookie: {
         secure: false, // HTTP 
         maxAge: 1000 * 60 * 60 // 1 hour
 
@@ -23,17 +23,46 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+web.set("view engine", "ejs");
+web.set("views", path.join(__dirname, "views"));
 
 //middleware
-app.use(express.static(path.join(__dirname, "/public")));
+web.use(express.static(path.join(__dirname, "/public")));
+web.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
-    const title = "HEdClass - Home";
-    res.render("login", { title });
+web.get("/", async (req, res) => {
+    res.redirect("/login");
 });
 
+// User login functions as the web landing page if not logged in. so root redirects to it.
+web.get('/login', async (req, res) => {
+    res.render('login', { title: 'Login', error: null });
+});
+
+
+web.post('/login', async (req, res) => {
+    console.log('API_BASE_URL:', process.env.API_BASE_URL);
+    console.log('Full URL:', `${process.env.API_BASE_URL}/login`);
+
+    const { email, password } = req.body;
+
+    try {
+    const authResult = await axios.post(`${process.env.API_BASE_URL}/login`, { email, password });
+
+    req.session.user = authResult.data.user;
+
+    if (authResult.data.user.role === 'admin') {
+        console.log('Admin login successful');
+        res.redirect('/admin/dashboard');
+    } else {
+        console.log('Officer login successful');
+        res.redirect('/officer/dashboard');
+    }
+    } catch (error) {
+        console.error('Login error:', error.message);
+        res.render('login', {title: 'Login', error: 'Invalid email or password' });
+    }
+});
 
 /*
 app.get("/dashboard", async (req, res) => {
@@ -46,6 +75,7 @@ app.get("/dashboard", async (req, res) => {
 });
 */
 
-app.listen(PORT, (err) => {
+
+web.listen(PORT, (err) => {
     console.log(`listening on port http://localhost:${PORT}`);
 });
