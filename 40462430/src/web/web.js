@@ -112,8 +112,21 @@ web.get('/dashboard', isAuthenticated, (req, res) => {
 
 // Admin dashboard routes
 
-web.get('/admin/dashboard', isAuthenticated, isAdmin, (req, res) => {
-    res.render('admin/dashboard');
+web.get('/admin/dashboard', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const dashboardResult = await axios.get(`${process.env.API_URL}/admin/stats`);
+        res.render('admin/dashboard', { stats: dashboardResult.data });
+    } catch (error) {
+        console.error('Error fetching admin stats:', error.message);
+        res.render('admin/dashboard', {
+            stats: {
+                totalProgrammes: 0,
+                totalOfficers: 0,
+                totalStudents: 0,
+                activeAssignments: 0
+            }
+        });
+    }
 });
 
 web.get('/admin/officers', isAuthenticated, isAdmin, async (req, res) => {
@@ -352,17 +365,6 @@ web.get('/logout', (req, res) => {
 
 });
 
-
-/*
-app.get("/dashboard", async (req, res) => {
- 
-    const ep = 'http://localhost:5000/getallstores';
-    const apiResult = await axios.get(ep);
-    const stores = apiResult.data.stores;
-    const count = apiResult.data.totalStores;
-    res.render("dashboard", { stores, count });
-});
-*/
 
 
 web.listen(PORT, (err) => {

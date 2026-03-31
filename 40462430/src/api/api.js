@@ -52,6 +52,26 @@ api.post('/login', async (req, res) => {
     });
 });
 
+api.get('/admin/stats', async (req, res) => {
+    try {
+
+        const [programmes] = await db.promise().query('SELECT * FROM programmes');
+        const [officers] = await db.promise().query('SELECT * FROM users WHERE role = ? AND is_active = 1', ['officer']);
+        const [students] = await db.promise().query('SELECT * FROM students');
+        const [assignments] = await db.promise().query('SELECT * FROM officer_assignments WHERE is_active = 1');
+
+        res.json({
+            totalProgrammes: programmes.length,
+            totalOfficers: officers.length,
+            totalStudents: students.length,
+            activeAssignments: assignments.length
+        });
+    } catch (error) {
+        console.error('Error fetching dashboard stats:', error.message);
+        res.status(500).json({ error: 'Error fetching dashboard stats' });
+    }
+});
+
 // API endpoint to fetch all officers for admin dashboard
 api.get('/officers', async (req, res) => {
     try {

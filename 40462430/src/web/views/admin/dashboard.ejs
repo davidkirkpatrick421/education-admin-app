@@ -16,4 +16,41 @@
 
         </div>
 
+
+
+        <div class="col-md-3">
+            <div class="card text-bg-primary">
+                <div class="card-body">
+                    <h6 class="card-title">Programmes</h6>
+                    <h2 class="card-text"><%= stats.totalProgrammes %></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-success">
+                <div class="card-body">
+                    <h6 class="card-title">Active Officers</h6>
+                    <h2 class="card-text"><%= stats.totalOfficers %></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-info">
+                <div class="card-body">
+                    <h6 class="card-title">Total Students</h6>
+                    <h2 class="card-text"><%= stats.totalStudents %></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-info">
+                <div class="card-body">
+                    <h6 class="card-title">Total Assignments</h6>
+                    <h2 class="card-text"><%= stats.activeAssignments %></h2>
+                </div>
+            </div>
+        </div>
+
+
+
         <%- include('../partials/footer') %>
