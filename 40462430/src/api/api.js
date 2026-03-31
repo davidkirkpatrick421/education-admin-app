@@ -293,12 +293,6 @@ api.post('/assignments', async (req, res) => {
         res.status(201).json({ message: 'Assignment added successfully' });
     } catch (error) {
         console.error('Error creating assignment:', error.message);
-        const errorMessage = error.response && error.response.data && error.response.data.error ? error.response.data.error : 'Error creating assignment';
-        res.render('admin/assignments-new', {
-            officers: [],
-            programmes: [],
-            error: 'errorMessage'
-        });
         res.status(500).json({ error: 'Error adding assignment' });
     }
 });
