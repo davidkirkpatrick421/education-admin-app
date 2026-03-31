@@ -30,6 +30,11 @@ web.set("views", path.join(__dirname, "views"));
 web.use(express.static(path.join(__dirname, "/public")));
 web.use(express.urlencoded({ extended: true }));
 
+web.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    next();
+});
+
 web.get("/", async (req, res) => {
     res.redirect("/login");
 });
@@ -41,27 +46,47 @@ web.get('/login', async (req, res) => {
 
 
 web.post('/login', async (req, res) => {
-    console.log('API_BASE_URL:', process.env.API_BASE_URL);
-    console.log('Full URL:', `${process.env.API_BASE_URL}/login`);
 
     const { email, password } = req.body;
 
     try {
-    const authResult = await axios.post(`${process.env.API_BASE_URL}/login`, { email, password });
+        const authResult = await axios.post(`${process.env.API_BASE_URL}/login`, { email, password });
 
-    req.session.user = authResult.data.user;
+        req.session.user = authResult.data.user;
 
-    if (authResult.data.user.role === 'admin') {
-        console.log('Admin login successful');
-        res.redirect('/admin/dashboard');
-    } else {
-        console.log('Officer login successful');
-        res.redirect('/officer/dashboard');
-    }
+        if (authResult.data.user.role === 'admin') {
+            console.log('Admin login successful');
+            res.redirect('/admin/dashboard');
+        } else {
+            console.log('Officer login successful');
+            res.redirect('/officer/dashboard');
+        }
     } catch (error) {
         console.error('Login error:', error.message);
-        res.render('login', {title: 'Login', error: 'Invalid email or password' });
+        res.render('login', { title: 'Login', error: 'Invalid email or password' });
     }
+});
+
+web.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+    console.log('User logged out successfully');
+});
+
+web.get('/admin/dashboard', async (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).send('Access denied');
+        res.redirect('/login');
+    }
+    res.render('dashboard', { title: 'Admin Dashboard' });
+});
+
+web.get('/officer/dashboard', async (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'officer') {
+        return res.status(403).send('Access denied');
+        res.redirect('/login');
+    }
+    res.render('dashboard', { title: 'Officer Dashboard' });
 });
 
 /*

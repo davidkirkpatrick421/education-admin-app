@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %> HEdClass
+    </title>
+</head>
+
+<body>
+
+    <h1>
+        <%= title %>
+    </h1>
+
+    <div>
+        <p>Welcome, <%= user.first_name %>
+                <%= user.surname %>!</p>
+        <p>Your role: <%= user.role %>
+        </p>
+    </div>
+
+    <div>
+        <% if (user.role==='admin' ) { %>
+            <p>Admin Registry - Dashboard</p>
+            <%  } else { %>
+                <p>Officer - Dashboard.</p>
+                
+            <% } %>
+    </div>
+
+    <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+</body>
+
+</html>
