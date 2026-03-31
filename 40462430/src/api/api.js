@@ -25,7 +25,7 @@ db.getConnection((err) => {
 api.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    const loginQuery = 'SELECT * FROM users WHERE email = ? AND is_active = 1';
+    const loginQuery = `SELECT * FROM users WHERE email = ? AND is_active = 1`;
 
     const [rows] = await db.promise().query(loginQuery, [email]);
 
@@ -56,7 +56,8 @@ api.post('/login', async (req, res) => {
 api.get('/officers', async (req, res) => {
     try {
         const [rows] = await db.promise().query(
-            'SELECT id, email, first_name, surname, is_active, created_at FROM users WHERE role = ?',
+            `SELECT id, email, first_name, surname, is_active, created_at 
+            FROM users WHERE role = ?`,
             ['officer']
         );
         res.json({ officers: rows });
@@ -72,7 +73,8 @@ api.post('/officers', async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         await db.promise().query(
-            'INSERT INTO users (email, first_name, surname, password, role) VALUES (?, ?, ?, ?, ?)',
+            `INSERT INTO users (email, first_name, surname, password, role) 
+            VALUES (?, ?, ?, ?, ?)`,
             [email, first_name, surname, hashedPassword, 'officer']
         );
         res.status(201).json({ message: 'Officer created successfully' });
@@ -87,7 +89,8 @@ api.get('/officers/:id', async (req, res) => {
     const officerId = req.params.id;
     try {
         const [rows] = await db.promise().query(
-            'SELECT id, email, first_name, surname, is_active FROM users WHERE id = ? AND role = ?',
+            `SELECT id, email, first_name, surname, is_active 
+            FROM users WHERE id = ? AND role = ?`,
             [officerId, 'officer']
         );
 
@@ -108,7 +111,9 @@ api.post('/officers/:id/edit', async (req, res) => {
 
     try {
         await db.promise().query(
-            'UPDATE users SET email = ?, first_name = ?, surname = ? WHERE id = ? AND role = ?',
+            `UPDATE users SET email = ?, 
+            first_name = ?, surname = ? 
+            WHERE id = ? AND role = ?`,
             [email, first_name, surname, officerId, 'officer']
         );
         res.json({ message: 'Officer updated successfully' });
@@ -123,7 +128,7 @@ api.post('/officers/:id/deactivate', async (req, res) => {
     const officerId = req.params.id;
     try {
         await db.promise().query(
-            'UPDATE users SET is_active = 0 WHERE id = ? AND role = ?',
+            `UPDATE users SET is_active = 0 WHERE id = ? AND role = ?`,
             [officerId, 'officer']
         );
         res.json({ message: 'Officer deactivated successfully' });
@@ -138,7 +143,7 @@ api.post('/officers/:id/reactivate', async (req, res) => {
     const officerId = req.params.id;
     try {
         await db.promise().query(
-            'UPDATE users SET is_active = 1 WHERE id = ? AND role = ?',
+            `UPDATE users SET is_active = 1 WHERE id = ? AND role = ?`,
             [officerId, 'officer']
         );
         res.json({ message: 'Officer reactivated successfully' });
@@ -152,7 +157,7 @@ api.post('/officers/:id/reactivate', async (req, res) => {
 api.get('/programmes', async (req, res) => {
     try {
         const [rows] = await db.promise().query(
-            'SELECT * FROM programmes'
+            `SELECT * FROM programmes`
         );
         res.json({ programmes: rows });
     } catch (error) {
@@ -166,7 +171,7 @@ api.get('/programmes/:id', async (req, res) => {
     const programmeId = req.params.id;
     try {
         const [rows] = await db.promise().query(
-            'SELECT * FROM programmes WHERE id = ?',
+            `SELECT * FROM programmes WHERE id = ?`,
             [programmeId]
         );
 
@@ -185,7 +190,9 @@ api.post('/programmes', async (req, res) => {
     const { code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline } = req.body;
     try {
         await db.promise().query(
-            'INSERT INTO programmes (code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            `INSERT INTO programmes (
+            code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline]
         );
         res.status(201).json({ message: 'Programme created successfully' });
@@ -202,7 +209,12 @@ api.post('/programmes/:id/edit', async (req, res) => {
 
     try {
         await db.promise().query(
-            'UPDATE programmes SET code = ?, title = ?, y2_weight = ?, y3_weight = ?, resit_cap_enabled = ?, resit_cap_mark = ?, board_deadline = ? WHERE id = ?',
+            `UPDATE programmes SET code = ?, 
+            title = ?, y2_weight = ?, 
+            y3_weight = ?, resit_cap_enabled = ?, 
+            resit_cap_mark = ?, 
+            board_deadline = ? 
+            WHERE id = ?`,
             [code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline, programmeId]
         );
         res.json({ message: 'Programme updated successfully' });
@@ -216,7 +228,16 @@ api.post('/programmes/:id/edit', async (req, res) => {
 api.get('/assignments', async (req, res) => {
     try {
         const [rows] = await db.promise().query(
-            'SELECT officer_assignments.id, officer_assignments.is_active, officer_assignments.assigned_at, users.id as officer_id, users.first_name, users.surname, users.email, programmes.id as programme_id, programmes.title as programme_title, programmes.code FROM officer_assignments INNER JOIN users ON officer_assignments.officer_id = users.id JOIN programmes ON officer_assignments.programme_id = programmes.id ORDER BY programmes.title, users.surname'
+            `SELECT officer_assignments.id, officer_assignments.is_active, 
+            officer_assignments.assigned_at, users.id as officer_id, 
+            users.first_name, users.surname, users.email, 
+            programmes.id as programme_id, programmes.title as programme_title, 
+            programmes.code 
+            FROM officer_assignments 
+            INNER JOIN users ON officer_assignments.officer_id = users.id 
+            INNER JOIN programmes ON officer_assignments.programme_id = programmes.id 
+            WHERE officer_assignments.is_active = 1 
+            ORDER BY programmes.title, users.surname`
         );
 
         res.json({ assignments: rows });
@@ -230,12 +251,13 @@ api.get('/assignments', async (req, res) => {
 api.get('/assignments/form-data', async (req, res) => {
     try {
         const [officers] = await db.promise().query(
-            'SELECT id, first_name, surname FROM users WHERE role = ? AND is_active = 1',
+            `SELECT id, first_name, surname FROM users 
+            WHERE role = ? AND is_active = 1`,
             ['officer']
         );
 
         const [programmes] = await db.promise().query(
-            'SELECT id, title FROM programmes'
+            `SELECT id, title FROM programmes`
         );
 
         res.json({ officers, programmes });
@@ -250,7 +272,8 @@ api.post('/assignments', async (req, res) => {
     const { officer_id, programme_id, assigned_by } = req.body;
     try {
         await db.promise().query(
-            'INSERT INTO officer_assignments (officer_id, programme_id, assigned_by) VALUES (?, ?, ?)',
+            `INSERT INTO officer_assignments (officer_id, programme_id, assigned_by) 
+            VALUES (?, ?, ?)`,
             [officer_id, programme_id, assigned_by]
         );
         res.status(201).json({ message: 'Assignment added successfully' });
@@ -265,7 +288,8 @@ api.post('/assignments/:id/remove', async (req, res) => {
     const assignmentId = req.params.id;
     try {
         await db.promise().query(
-            'UPDATE officer_assignments SET is_active = 0 WHERE id = ?',
+            `UPDATE officer_assignments SET is_active = 0 
+            WHERE id = ?`,
             [assignmentId]
         );
         res.json({ message: 'Assignment removed successfully' });
