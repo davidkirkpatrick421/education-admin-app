@@ -53,7 +53,6 @@ api.post('/login', async (req, res) => {
 });
 
 // API endpoint to fetch all officers for admin dashboard
-
 api.get('/officers', async (req, res) => {
     try {
         const [rows] = await db.promise().query(
@@ -68,24 +67,22 @@ api.get('/officers', async (req, res) => {
 });
 
 // API endpoint to create a new officer
-
 api.post('/officers', async (req, res) => {
-        const { email, first_name, surname, password } = req.body;
-        try {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            await db.promise().query(
-                'INSERT INTO users (email, first_name, surname, password, role) VALUES (?, ?, ?, ?, ?)',
-                [email, first_name, surname, hashedPassword, 'officer']
-            );
-            res.status(201).json({ message: 'Officer created successfully' });
-        } catch (error) {
-            console.error('Error creating officer:', error.message);
-            res.status(500).json({ error: 'Error creating officer' });
-        }
+    const { email, first_name, surname, password } = req.body;
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await db.promise().query(
+            'INSERT INTO users (email, first_name, surname, password, role) VALUES (?, ?, ?, ?, ?)',
+            [email, first_name, surname, hashedPassword, 'officer']
+        );
+        res.status(201).json({ message: 'Officer created successfully' });
+    } catch (error) {
+        console.error('Error creating officer:', error.message);
+        res.status(500).json({ error: 'Error creating officer' });
+    }
 });
 
 // API endpoint to fetch officer details by id for editing
-
 api.get('/officers/:id', async (req, res) => {
     const officerId = req.params.id;
     try {
@@ -93,7 +90,7 @@ api.get('/officers/:id', async (req, res) => {
             'SELECT id, email, first_name, surname, is_active FROM users WHERE id = ? AND role = ?',
             [officerId, 'officer']
         );
-    
+
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Officer not found' });
         }
@@ -105,11 +102,10 @@ api.get('/officers/:id', async (req, res) => {
 });
 
 // API endpoint to update officer details
-
 api.post('/officers/:id/edit', async (req, res) => {
     const { email, first_name, surname } = req.body;
     const officerId = req.params.id;
-    
+
     try {
         await db.promise().query(
             'UPDATE users SET email = ?, first_name = ?, surname = ? WHERE id = ? AND role = ?',
@@ -123,7 +119,6 @@ api.post('/officers/:id/edit', async (req, res) => {
 });
 
 // API endpoint to deactivate an officer
-
 api.post('/officers/:id/deactivate', async (req, res) => {
     const officerId = req.params.id;
     try {
@@ -139,7 +134,6 @@ api.post('/officers/:id/deactivate', async (req, res) => {
 });
 
 // API endpoint to reactivate an officer
-
 api.post('/officers/:id/reactivate', async (req, res) => {
     const officerId = req.params.id;
     try {
@@ -153,6 +147,134 @@ api.post('/officers/:id/reactivate', async (req, res) => {
         res.status(500).json({ error: 'Error reactivating officer' });
     }
 });
+
+// API endpoint to show all programmes
+api.get('/programmes', async (req, res) => {
+    try {
+        const [rows] = await db.promise().query(
+            'SELECT * FROM programmes'
+        );
+        res.json({ programmes: rows });
+    } catch (error) {
+        console.error('Error fetching programmes:', error.message);
+        res.status(500).json({ error: 'Error fetching programmes' });
+    }
+});
+
+// API endpoint to show programme details by id
+api.get('/programmes/:id', async (req, res) => {
+    const programmeId = req.params.id;
+    try {
+        const [rows] = await db.promise().query(
+            'SELECT * FROM programmes WHERE id = ?',
+            [programmeId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Programme not found' });
+        }
+        res.json({ programme: rows[0] });
+    } catch (error) {
+        console.error('Error fetching programme details:', error.message);
+        res.status(500).json({ error: 'Error fetching programme details' });
+    }
+});
+
+// API endpoint to create a new programme
+api.post('/programmes', async (req, res) => {
+    const { code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline } = req.body;
+    try {
+        await db.promise().query(
+            'INSERT INTO programmes (code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline]
+        );
+        res.status(201).json({ message: 'Programme created successfully' });
+    } catch (error) {
+        console.error('Error creating programme:', error.message);
+        res.status(500).json({ error: 'Error creating programme' });
+    }
+});
+
+// API endpoint to update programme details
+api.post('/programmes/:id/edit', async (req, res) => {
+    const { code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline } = req.body;
+    const programmeId = req.params.id;
+
+    try {
+        await db.promise().query(
+            'UPDATE programmes SET code = ?, title = ?, y2_weight = ?, y3_weight = ?, resit_cap_enabled = ?, resit_cap_mark = ?, board_deadline = ? WHERE id = ?',
+            [code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline, programmeId]
+        );
+        res.json({ message: 'Programme updated successfully' });
+    } catch (error) {
+        console.error('Error updating programme:', error.message);
+        res.status(500).json({ error: 'Error updating programme' });
+    }
+});
+
+// API endpoint to show all assignments for admin dashboard with officer and programme details
+api.get('/assignments', async (req, res) => {
+    try {
+        const [rows] = await db.promise().query(
+            'SELECT officer_assignments.id, officer_assignments.is_active, officer_assignments.assigned_at, users.id as officer_id, users.first_name, users.surname, users.email, programmes.id as programme_id, programmes.title as programme_title, programmes.code FROM officer_assignments INNER JOIN users ON officer_assignments.officer_id = users.id JOIN programmes ON officer_assignments.programme_id = programmes.id ORDER BY programmes.title, users.surname'
+        );
+
+        res.json({ assignments: rows });
+    } catch (error) {
+        console.error('Error fetching assignments:', error.message);
+        res.status(500).json({ error: 'Error fetching assignments' });
+    }
+});
+
+// API endpoint to get all officer and programme details for assignment form
+api.get('/assignments/form-data', async (req, res) => {
+    try {
+        const [officers] = await db.promise().query(
+            'SELECT id, first_name, surname FROM users WHERE role = ? AND is_active = 1',
+            ['officer']
+        );
+
+        const [programmes] = await db.promise().query(
+            'SELECT id, title FROM programmes'
+        );
+
+        res.json({ officers, programmes });
+    } catch (error) {
+        console.error('Error fetching form data:', error.message);
+        res.status(500).json({ error: 'Error fetching form data' });
+    }
+});
+
+// API endpoint to add a new assignment
+api.post('/assignments', async (req, res) => {
+    const { officer_id, programme_id, assigned_by } = req.body;
+    try {
+        await db.promise().query(
+            'INSERT INTO officer_assignments (officer_id, programme_id, assigned_by) VALUES (?, ?, ?)',
+            [officer_id, programme_id, assigned_by]
+        );
+        res.status(201).json({ message: 'Assignment added successfully' });
+    } catch (error) {
+        console.error('Error creating assignment:', error.message);
+        res.status(500).json({ error: 'Error adding assignment' });
+    }
+});
+
+// API endpoint to remove an assignment
+api.post('/assignments/:id/remove', async (req, res) => {
+    const assignmentId = req.params.id;
+    try {
+        await db.promise().query(
+            'UPDATE officer_assignments SET is_active = 0 WHERE id = ?',
+            [assignmentId]
+        );
+        res.json({ message: 'Assignment removed successfully' });
+    } catch (error) {
+        console.error('Error removing assignment:', error.message);
+        res.status(500).json({ error: 'Error removing assignment' });
+    }
+});
+
 
 
 api.listen(PORT, () => {

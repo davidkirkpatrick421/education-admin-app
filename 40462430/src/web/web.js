@@ -144,6 +144,7 @@ web.post('/admin/officers', isAuthenticated, isAdmin, async (req, res) => {
         };
 
         await axios.post(`${process.env.API_URL}/officers`, req.body);
+        console.log('Officer created successfully');
         res.redirect('/admin/officers');
     } catch (error) {
         console.error('Error creating officer:', error.message);
@@ -202,6 +203,118 @@ web.post('/admin/officers/:id/reactivate', isAuthenticated, isAdmin, async (req,
         res.redirect('/admin/officers');
     }
 });
+
+web.get('/admin/programmes', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const response = await axios.get(`${process.env.API_URL}/programmes`);
+        const programmeData = response.data.programmes;
+        res.render('admin/programmes', { programmes: programmeData });
+    } catch (error) {
+        console.error('Error fetching programmes:', error.message);
+        res.status(500).send('Error fetching programmes');
+    }
+});
+
+web.get('/admin/programmes-new', isAuthenticated, isAdmin, (req, res) => {
+    res.render('admin/programmes-new', { error: null });
+});
+
+web.post('/admin/programmes', isAuthenticated, isAdmin, async (req, res) => {
+
+    const { code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline } = req.body;
+    if (!code || !title || !y2_weight || !y3_weight || !resit_cap_enabled || !resit_cap_mark || !board_deadline) {
+        return res.render('admin/programmes-new', { error: 'All fields are required' });
+    };
+
+    try {
+        await axios.post(`${process.env.API_URL}/programmes`, req.body);
+        console.log('Programme created successfully');
+        res.redirect('/admin/programmes');
+    } catch (error) {
+        console.error('Error creating programme:', error.message);
+        res.render('admin/programmes-new', { error: 'Error creating programme' });
+    }
+});
+
+web.get('/admin/programmes/:id/edit', isAuthenticated, isAdmin, async (req, res) => {
+    const programmeId = req.params.id;
+    try {
+        const editResponse = await axios.get(`${process.env.API_URL}/programmes/${programmeId}`);
+        res.render('admin/programmes-edit', { programme: editResponse.data.programme, error: null });
+    } catch (error) {
+        console.error('Error fetching programme:', error.message);
+        res.redirect('/admin/programmes');
+    }
+});
+
+web.post('/admin/programmes/:id/edit', isAuthenticated, isAdmin, async (req, res) => {
+    const { code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline } = req.body;
+    const programmeId = req.params.id;
+
+    if (!code || !title || !y2_weight || !y3_weight || !resit_cap_enabled || !resit_cap_mark || !board_deadline) {
+        const editResponse = await axios.get(`${process.env.API_URL}/programmes/${programmeId}/edit`, req.body);
+        return res.render('admin/programmes-edit', { programme: editResponse.data.programme, error: 'All fields are required' });
+    };
+
+    try {
+        await axios.post(`${process.env.API_URL}/programmes/${programmeId}/edit`, req.body);
+        res.redirect('/admin/programmes');
+    } catch (error) {
+        console.error('Error updating programme:', error.message);
+        res.render('admin/programmes-edit', { error: 'Error updating programme' });
+    }
+});
+
+web.get('/admin/assignments', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const response = await axios.get(`${process.env.API_URL}/assignments`);
+        const assignmentData = response.data.assignments;
+        res.render('admin/assignments', { assignments: assignmentData });
+    } catch (error) {
+        console.error('Error fetching assignments:', error.message);
+        res.render('admin/assignments', { assignments: [] });
+    }
+});
+
+web.get('/admin/assignments-new', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const response = await axios.get(`${process.env.API_URL}/assignments/form-data`);
+        const { officers, programmes } = response.data;
+        res.render('admin/assignments-new', { officers, programmes, error: null });
+    } catch (error) {
+        console.error('Error fetching form data:', error.message);
+        res.redirect('/admin/assignments-new', { error: 'Error fetching form data' });
+    }
+});
+
+web.post('/admin/assignments', isAuthenticated, isAdmin, async (req, res) => {
+    const { officer_id, programme_id } = req.body;
+    if (!officer_id || !programme_id) {
+        return res.redirect('/admin/assignments-new', { error: 'All fields are required' });
+    };
+    
+    try {
+        await axios.post(`${process.env.API_URL}/assignments`, { officer_id, programme_id, assigned_by: req.session.user.id });
+        res.redirect('/admin/assignments');
+        console.log('Assignment created successfully');
+    } catch (error) {
+        console.error('Error creating assignment:', error.message);
+        res.redirect('/admin/assignments-new', { error: 'Error creating assignment' });
+    }
+});
+
+web.post('/admin/assignments/:id/remove', isAuthenticated, isAdmin, async (req, res) => {
+    const assignmentId = req.params.id;
+    try {
+        await axios.post(`${process.env.API_URL}/assignments/${assignmentId}/remove`);
+        res.redirect('/admin/assignments');
+        console.log('Assignment removed successfully');
+    } catch (error) {
+        console.error('Error removing assignment:', error.message);
+        res.redirect('/admin/assignments', { error: 'Error removing assignment' });
+    }
+});
+
 
 
 // Officer dashboard routes 

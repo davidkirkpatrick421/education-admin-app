@@ -1,0 +1,55 @@
+<%- include('../partials/head', { title: 'New Programme' }) %>
+    <%- include('../partials/nav') %>
+        <h2 class="mb-4">Add Degree Programme</h2>
+
+        <% if (error) { %>
+            <div class="alert alert-danger">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <form action="/admin/programmes" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Programme Code</label>
+                        <input type="text" name="code" class="form-control" placeholder="e.g. CSC7052" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. BSc Computer Science"
+                            required>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Year 2 Weight</label>
+                            <input type="number" name="y2_weight" class="form-control" step="0.01" min="0" max="1"
+                                value="0.30" required>
+                            <div class="form-text">e.g. 0.30 = 30%</div>
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label">Year 3 Weight</label>
+                            <input type="number" name="y3_weight" class="form-control" step="0.01" min="0" max="1"
+                                value="0.70" required>
+                            <div class="form-text">e.g. 0.70 = 70%</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Resit Cap</label>
+                        <select name="resit_cap_enabled" class="form-select">
+                            <option value="1">Enabled</option>
+                            <option value="0">Disabled</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Resit Cap Mark</label>
+                        <input type="number" name="resit_cap_mark" class="form-control" value="40" min="0" max="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Board Deadline</label>
+                        <input type="date" name="board_deadline" class="form-control">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Create Programme</button>
+                        <a href="/admin/programmes" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+                <%- include('../partials/footer') %>
