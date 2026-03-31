@@ -35,6 +35,8 @@ web.use((req, res, next) => {
     next();
 });
 
+// Authentication and role-based access middleware
+
 const isAuthenticated = (req, res, next) => {
     if (!req.session.user) {
         return res.redirect('/login');
@@ -57,6 +59,8 @@ const isOfficer = (req, res, next) => {
 };
 
 
+// Routes
+
 web.get("/", (req, res) => {
     res.redirect("/login");
 });
@@ -66,6 +70,7 @@ web.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
+// Handle login form submission to auth via API
 
 web.post('/login', async (req, res) => {
 
@@ -92,6 +97,8 @@ web.post('/login', async (req, res) => {
     }
 });
 
+// Dashboard route that redirects users to their respective dashboards based on role
+
 web.get('/dashboard', isAuthenticated, (req, res) => {
 
     if (req.session.user.role === 'admin') {
@@ -107,9 +114,25 @@ web.get('/admin/dashboard', isAuthenticated, isAdmin, (req, res) => {
     res.render('admin/dashboard');
 });
 
+web.get('/admin/officers', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const response = await axios.get(`${process.env.API_BASE_URL}/officers`);
+        const officerData = response.data.officers;
+        res.render('admin/officers', { officers: officerData });
+    } catch (error) {
+        console.error('Error fetching officers:', error.message);
+        res.status(500).send('Error fetching officers');
+    }
+});
+
+
+
 web.get('/officer/dashboard', isAuthenticated, isOfficer, (req, res) => {
     res.render('officer/dashboard');
 });
+
+
+
 
 web.get('/logout', (req, res) => {
     req.session.destroy();
@@ -117,6 +140,7 @@ web.get('/logout', (req, res) => {
     res.redirect('/login');
 
 });
+
 
 /*
 app.get("/dashboard", async (req, res) => {

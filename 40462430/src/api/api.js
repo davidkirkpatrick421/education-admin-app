@@ -21,6 +21,7 @@ db.getConnection((err) => {
     console.log("Database Connected: Success!");
 });
 
+// API endpoint for user login form
 api.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -49,6 +50,21 @@ api.post('/login', async (req, res) => {
             role: user.role
         }
     });
+});
+
+// API endpoint to fetch all officers for admin dashboard
+
+api.get('/officers', async (req, res) => {
+    try {
+        const [rows] = await db.promise().query(
+            'SELECT email, first_name, surname, is_active, created_at FROM users WHERE role = ?',
+            ['officer']
+        );
+        res.json({ officers: rows });
+    } catch (error) {
+        console.error('Error fetching officers:', error.message);
+        res.status(500).json({ error: 'Error fetching officers' });
+    }
 });
 
 api.listen(PORT, () => {
