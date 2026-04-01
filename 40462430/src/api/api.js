@@ -40,6 +40,15 @@ api.post('/login', async (req, res) => {
         return res.status(401).json({ error: 'Invalid password' });
     }
 
+    if(user.role === 'officer') {
+        const assignmentQuery = `SELECT programme_id, programmes.title FROM officer_assignments 
+        INNER JOIN programmes ON officer_assignments.programme_id = programmes.id 
+        WHERE officer_assignments.officer_id = ? AND officer_assignments.is_active = 1`;
+        
+        const [assignments] = await db.promise().query(assignmentQuery, [user.id]);
+        user.assignments = assignments;
+    } 
+
     res.json({
         message: 'Login successful',
         user: {
@@ -47,7 +56,8 @@ api.post('/login', async (req, res) => {
             email: user.email,
             first_name: user.first_name,
             surname: user.surname,
-            role: user.role
+            role: user.role,
+            assignments: user.assignments || []
         }
     });
 });

@@ -352,6 +352,7 @@ web.post('/admin/assignments/:id/remove', isAuthenticated, isAdmin, async (req, 
 // Officer dashboard routes 
 
 web.get('/officer/dashboard', isAuthenticated, isOfficer, (req, res) => {
+    console.log('Officer assignments:', req.session.user.assignments);
     res.render('officer/dashboard');
 });
 
