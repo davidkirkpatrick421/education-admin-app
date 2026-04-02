@@ -1,7 +1,11 @@
 <%- include('../partials/head', {title: 'Officer Dashboard'}) %>
 <%- include('../partials/nav') %>
 
-    
+    <% if (error) { %>
+        <div class="alert alert-warning"><%= error %></div>
+    <% } %>
+
+    <% if (programme) { %>
 
     <div>
         <p>Welcome, <%= user.first_name %>
@@ -15,5 +19,24 @@
         <p>Officer - Dashboard.</p>
 
     </div>
+<% if (stats) { %>
+    <div class="col-md-3">
+            <div class="card text-bg-primary">
+                <div class="card-body">
+                    <h6 class="card-title">Students</h6>
+                    <h2 class="card-text"><%= stats.totalStudents %></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-success">
+                <div class="card-body">
+                    <h6 class="card-title">Classifications</h6>
+                    <h2 class="card-text"><%= stats.totalClassifications %></h2>
+                </div>
+            </div>
+        </div>
+    <% } %>
+    <% } %>
 
     <%- include('../partials/footer') %>

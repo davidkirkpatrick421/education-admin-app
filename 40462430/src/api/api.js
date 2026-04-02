@@ -40,14 +40,14 @@ api.post('/login', async (req, res) => {
         return res.status(401).json({ error: 'Invalid password' });
     }
 
-    if(user.role === 'officer') {
+    if (user.role === 'officer') {
         const assignmentQuery = `SELECT programme_id, programmes.title FROM officer_assignments 
         INNER JOIN programmes ON officer_assignments.programme_id = programmes.id 
         WHERE officer_assignments.officer_id = ? AND officer_assignments.is_active = 1`;
-        
+
         const [assignments] = await db.promise().query(assignmentQuery, [user.id]);
         user.assignments = assignments;
-    } 
+    }
 
     res.json({
         message: 'Login successful',
@@ -63,6 +63,7 @@ api.post('/login', async (req, res) => {
 });
 
 api.get('/admin/stats', async (req, res) => {
+
     try {
 
         const [programmes] = await db.promise().query('SELECT * FROM programmes');
@@ -343,7 +344,44 @@ api.post('/assignments/:id/remove', async (req, res) => {
     }
 });
 
+api.get('/officer/stats/:programme_id', async (req, res) => {
+    const { programme_id } = req.params;
 
+    try {
+
+        const [students] = await db.promise().query(
+            `SELECT *  
+            FROM students 
+            WHERE programme_id = ?`,
+            [programme_id]
+        );
+        const [classifications] = await db.promise().query(
+            `SELECT 
+            * FROM classification_results 
+            WHERE programme_id = ? 
+            AND classification_code IS NOT NULL`,
+            [programme_id]
+        );
+
+      /*  const [stats] = await db.promise().query(
+            `SELECT COUNT(*) as total_assignments FROM officer_assignments 
+            WHERE programme_id = ? AND is_active = 1`,
+            [programme_id]
+        );
+        */
+
+
+        res.json({ 
+            totalStudents: students.length,
+            totalClassifications: classifications.length,
+
+
+        });
+    } catch (error) {
+        console.error('Error fetching officer stats:', error.message);
+        res.status(500).json({ error: 'Error fetching officer stats' });
+    }
+});
 
 api.listen(PORT, () => {
     console.log(`API is running on port ${PORT}`);

@@ -20,6 +20,8 @@ web.use(session({
 
 import path from "path";
 import { fileURLToPath } from "url";
+import { error } from 'console';
+import { stat } from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -351,9 +353,40 @@ web.post('/admin/assignments/:id/remove', isAuthenticated, isAdmin, async (req, 
 
 // Officer dashboard routes 
 
-web.get('/officer/dashboard', isAuthenticated, isOfficer, (req, res) => {
+web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
     console.log('Officer assignments:', req.session.user.assignments);
-    res.render('officer/dashboard');
+    const assignments = req.session.user.assignments;
+
+    console.log('API URL:', `${process.env.API_URL}/officer/stats/${assignments[0].programme_id}`);
+    console.log('Assignments from session:', assignments);
+    if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
+        return res.render('officer/dashboard', {
+            programme: null,
+            error: 'You have no active programme assignments. Please contact administrator.'
+        });
+    }
+
+    const programme = assignments[0];
+    console.log('Programme:', programme);
+
+    try {
+        const dashboardResult = await axios.get(`${process.env.API_URL}/officer/stats/${programme.programme_id}`);
+        res.render('officer/dashboard', {
+            programme: programme,
+            stats: dashboardResult.data,
+            error: null
+        });
+
+    } catch (error) {
+        console.error('Error fetching officer dashboard data:', error.message);
+        return res.render('officer/dashboard', {
+            programme: null,
+            stats: null,
+            error: 'Error loading dashboard data'
+        });
+    }
+
+    // res.render('officer/dashboard');
 });
 
 
