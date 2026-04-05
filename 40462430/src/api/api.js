@@ -363,15 +363,15 @@ api.get('/officer/stats/:programme_id', async (req, res) => {
             [programme_id]
         );
 
-      /*  const [stats] = await db.promise().query(
-            `SELECT COUNT(*) as total_assignments FROM officer_assignments 
-            WHERE programme_id = ? AND is_active = 1`,
-            [programme_id]
-        );
-        */
+        /*  const [stats] = await db.promise().query(
+              `SELECT COUNT(*) as total_assignments FROM officer_assignments 
+              WHERE programme_id = ? AND is_active = 1`,
+              [programme_id]
+          );
+          */
 
 
-        res.json({ 
+        res.json({
             totalStudents: students.length,
             totalClassifications: classifications.length,
 
@@ -382,6 +382,25 @@ api.get('/officer/stats/:programme_id', async (req, res) => {
         res.status(500).json({ error: 'Error fetching officer stats' });
     }
 });
+
+api.get('/officer/students/:programme_id', async (req, res) => {
+    const { programme_id } = req.params;
+
+    try {
+        const [rows] = await db.promise().query(
+            `SELECT id, student_number, first_name, surname, academic_year, has_mc, mc_notes, created_at
+            FROM students 
+            WHERE programme_id = ?`,
+            [programme_id]
+        );
+        res.json({ students: rows });
+    } catch (error) {
+        console.error('Error fetching students:', error.message);
+        res.status(500).json({ error: 'Error fetching students' });
+    }
+});
+
+
 
 api.listen(PORT, () => {
     console.log(`API is running on port ${PORT}`);

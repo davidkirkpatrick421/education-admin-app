@@ -386,7 +386,31 @@ web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
         });
     }
 
-    // res.render('officer/dashboard');
+});
+
+web.get('/officer/students', isAuthenticated, isOfficer, async (req, res) => {
+    if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
+        return res.render('officer/students', {
+            students: null,
+            error: 'You have no active programme assignments. Please contact administrator.'
+        });
+    }
+
+    const programme = req.session.user.assignments[0];
+
+    try {
+        const studentsResult = await axios.get(`${process.env.API_URL}/officer/students/${programme.programme_id}`);
+        res.render('officer/students', {
+            students: studentsResult.data.students,
+            error: null
+        });
+    } catch (error) {
+        console.error('Error fetching students:', error.message);
+        res.render('officer/students', {
+            students: null,
+            error: 'Error fetching students'
+        });
+    }
 });
 
 
