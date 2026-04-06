@@ -486,6 +486,16 @@ web.get('/officer/students/:id', isAuthenticated, isOfficer, async (req, res) =>
 
     try {
         const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+console.log('Student programme_id:', student.programme_id, typeof student.programme_id);
+console.log('Assignment programme_ids:', req.session.user.assignments.map(a => ({ id: a.programme_id, type: typeof a.programme_id })));
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
 
         res.render('officer/student-details', {
             student: studentDetails.data.student,

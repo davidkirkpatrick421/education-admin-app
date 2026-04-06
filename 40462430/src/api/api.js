@@ -433,7 +433,7 @@ api.get('/officer/students/:id', async (req, res) => {
 
     try {
         const [student] = await db.promise().query(
-            `SELECT id, student_number, first_name, surname, academic_year, has_mc, mc_notes 
+            `SELECT id, programme_id, student_number, first_name, surname, academic_year, has_mc, mc_notes 
             FROM students WHERE id = ?`,
             [studentId]
         );
