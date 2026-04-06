@@ -344,6 +344,7 @@ api.post('/assignments/:id/remove', async (req, res) => {
     }
 });
 
+// API endpoint to fetch stats for an officer dashboard based on assigned programme
 api.get('/officer/stats/:programme_id', async (req, res) => {
     const { programme_id } = req.params;
 
@@ -383,6 +384,7 @@ api.get('/officer/stats/:programme_id', async (req, res) => {
     }
 });
 
+// API endpoint to fetch all students for an officer based on assigned programme
 api.get('/officer/students/programme/:programme_id', async (req, res) => {
 
 
@@ -402,9 +404,8 @@ api.get('/officer/students/programme/:programme_id', async (req, res) => {
     }
 });
 
+// API endpoint to add a new student for an officer based on assigned programme
 api.post('/officer/students', async (req, res) => {
-    console.log('API POST students hit');
-    console.log('req.body:', req.body);
 
     const { student_number, first_name, surname, programme_id, academic_year } = req.body;
     let has_mc; if (req.body.has_mc === 'on') {
@@ -428,6 +429,7 @@ api.post('/officer/students', async (req, res) => {
     }
 });
 
+// API endpoint to fetch student details by id for officer dashboard
 api.get('/officer/students/:id', async (req, res) => {
     const studentId = req.params.id;
 
@@ -463,6 +465,49 @@ api.get('/officer/students/:id', async (req, res) => {
     } catch (error) {
         console.error('Error fetching student details:', error.message);
         res.status(500).json({ error: 'Error fetching student details' });
+    }
+});
+
+// API endpoint to update student details for an officer based on assigned programme
+api.post('/officer/students/:id/edit', async (req, res) => {
+    const studentId = req.params.id;
+    const { student_number, first_name, surname, academic_year } = req.body;
+
+    let has_mc;
+    if (req.body.has_mc === 'on') {
+        has_mc = 1;
+    } else {
+        has_mc = 0;
+    }
+    const mc_notes = req.body.mc_notes || null;
+
+    try {
+        await db.promise().query(
+            `UPDATE students SET student_number = ?, 
+            first_name = ?, surname = ?, academic_year = ?, has_mc = ?, mc_notes = ? 
+            WHERE id = ?`,
+            [student_number, first_name, surname, academic_year, has_mc, mc_notes, studentId]
+        );
+        res.json({ message: 'Student updated successfully' });
+    } catch (error) {
+        console.error('Error updating student:', error.message);
+        res.status(500).json({ error: 'Error updating student' });
+    }
+});
+
+// API endpoint to delete a student for an officer based on assigned programme
+api.post('/officer/students/:id/delete', async (req, res) => {
+    const studentId = req.params.id;
+
+    try {
+        await db.promise().query(
+            `DELETE FROM students WHERE id = ?`,
+            [studentId]
+        );
+        res.json({ message: 'Student deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting student:', error.message);
+        res.status(500).json({ error: 'Error deleting student' });
     }
 });
 

@@ -390,8 +390,6 @@ web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
 
 web.get('/officer/students', isAuthenticated, isOfficer, async (req, res) => {
 
-
-
     if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
         return res.render('officer/students', {
             students: [],
@@ -450,9 +448,6 @@ web.get('/officer/students/new', isAuthenticated, isOfficer, async (req, res) =>
 });
 
 web.post('/officer/students/new', isAuthenticated, isOfficer, async (req, res) => {
-    console.log('POST students hit');
-    console.log('req.body:', req.body);
-    console.log('API URL:', `${process.env.API_URL}/officer/students`);
 
     const { student_number, first_name, surname, academic_year, has_mc, mc_notes, programme_id } = req.body;
 
@@ -487,8 +482,7 @@ web.get('/officer/students/:id', isAuthenticated, isOfficer, async (req, res) =>
     try {
         const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
         const student = studentDetails.data.student;
-console.log('Student programme_id:', student.programme_id, typeof student.programme_id);
-console.log('Assignment programme_ids:', req.session.user.assignments.map(a => ({ id: a.programme_id, type: typeof a.programme_id })));
+
         const isAssigned = req.session.user.assignments.some(
             a => parseInt(a.programme_id) === parseInt(student.programme_id));
 
@@ -503,17 +497,114 @@ console.log('Assignment programme_ids:', req.session.user.assignments.map(a => (
             classification: studentDetails.data.classification || null,
             programmeId,
             error: null
-         });
-     } catch (error) {
-         console.error('Error fetching student details:', error.message);
-         res.render('officer/student-details', {
-             student: null, 
-             modules: [],
-             classification: null,
-             programmeId,
-             error: 'Error fetching student details'
-         });
-     }
+        });
+    } catch (error) {
+        console.error('Error fetching student details:', error.message);
+        res.render('officer/student-details', {
+            student: null,
+            modules: [],
+            classification: null,
+            programmeId,
+            error: 'Error fetching student details'
+        });
+    }
+});
+
+web.get('/officer/students/:id/edit', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+
+    try {
+        const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+console.log('Student data:', studentDetails.data.student);
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to edit student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        res.render('officer/student-edit', {
+            student: studentDetails.data.student,
+            programmeId,
+            error: null
+        });
+    } catch (error) {
+        console.error('Error fetching student details for edit:', error.message);
+        res.render('officer/student-edit', {
+            student: null,
+            programmeId,
+            error: 'Error fetching student details'
+        });
+    }
+});
+
+web.post('/officer/students/:id/edit', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    try {
+        const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to edit student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        await axios.post(`${process.env.API_URL}/officer/students/${studentId}/edit`, req.body);
+        console.log('Student updated successfully');
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
+
+    } catch (error) {
+        console.error('Error updating student:', error.message);
+        const errorMessage = error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Error updating student';
+
+        res.render('officer/student-edit', {
+            student: {
+                id: studentId,
+                student_number: req.body.student_number,
+                first_name: req.body.first_name,
+                surname: req.body.surname,
+                academic_year: req.body.academic_year,
+                has_mc: req.body.has_mc,
+                mc_notes: req.body.mc_notes
+            },
+            programmeId,
+            error: errorMessage
+        });
+    }
+});
+
+web.post('/officer/students/:id/delete', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+
+    try {
+        const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to delete student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        await axios.post(`${process.env.API_URL}/officer/students/${studentId}/delete`);
+        console.log('Student deleted successfully');
+        res.redirect(`/officer/students?programme=${programmeId}`);
+    } catch (error) {
+        console.error('Error deleting student:', error.message);
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
+    }
 });
 
 web.get('/logout', (req, res) => {
