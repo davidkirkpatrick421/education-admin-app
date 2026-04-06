@@ -407,7 +407,7 @@ web.get('/officer/students', isAuthenticated, isOfficer, async (req, res) => {
     console.log('API URL:', `${process.env.API_URL}/officer/students/${programmeId}`);
 
     try {
-        const studentsResult = await axios.get(`${process.env.API_URL}/officer/students/${programmeId}`);
+        const studentsResult = await axios.get(`${process.env.API_URL}/officer/students/programme/${programmeId}`);
         res.render('officer/students', {
             students: studentsResult.data.students,
             assignments: assignments,

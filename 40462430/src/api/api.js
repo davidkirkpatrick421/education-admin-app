@@ -383,7 +383,7 @@ api.get('/officer/stats/:programme_id', async (req, res) => {
     }
 });
 
-api.get('/officer/students/:programme_id', async (req, res) => {
+api.get('/officer/students/programme/:programme_id', async (req, res) => {
 
 
     const { programme_id } = req.params;
@@ -425,6 +425,25 @@ api.post('/officer/students', async (req, res) => {
     } catch (error) {
         console.error('Error adding student:', error.message);
         res.status(500).json({ error: 'Error adding student' });
+    }
+});
+
+api.get('/officer/students/:id', async (req, res) => {
+    const studentId = req.params.id;
+    try {
+        const [rows] = await db.promise().query(
+            `SELECT id, student_number, first_name, surname, academic_year, has_mc, mc_notes 
+            FROM students WHERE id = ?`,
+            [studentId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Student not found' });
+        }
+        res.json({ student: rows[0] });
+    } catch (error) {
+        console.error('Error fetching student details:', error.message);
+        res.status(500).json({ error: 'Error fetching student details' });
     }
 });
 
