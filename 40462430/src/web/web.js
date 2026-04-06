@@ -480,8 +480,31 @@ web.post('/officer/students/new', isAuthenticated, isOfficer, async (req, res) =
     }
 });
 
+web.get('/officer/students/:id', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
 
+    try {
+        const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
 
+        res.render('officer/student-details', {
+            student: studentDetails.data.student,
+            modules: studentDetails.data.modules,
+            classification: studentDetails.data.classification || null,
+            programmeId,
+            error: null
+         });
+     } catch (error) {
+         console.error('Error fetching student details:', error.message);
+         res.render('officer/student-details', {
+             student: null, 
+             modules: [],
+             classification: null,
+             programmeId,
+             error: 'Error fetching student details'
+         });
+     }
+});
 
 web.get('/logout', (req, res) => {
     req.session.destroy();

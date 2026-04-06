@@ -1,0 +1,83 @@
+<%- include('../partials/head', {title: 'Students'}) %>
+<%- include('../partials/nav') %>
+
+<a href="/officer/students?programme=<%= programmeId %>">← Back to Students</a>
+
+    <% if (error) { %>
+        <div class="alert alert-warning"><%= error %></div>
+    <% } %>
+
+    <h2 class="mb-4">Student Details</h2>
+
+    <a href="/officer/students/<%= student.id %>/edit?programme=<%= programmeId %>" class="btn btn-sm btn-outline-secondary mb-3">Edit Student</a>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title"><%= student.first_name %> <%= student.surname %></h5>
+            <p class="card-text"><strong>Student Number:</strong> <%= student.student_number %></p>
+            <p class="card-text"><strong>Academic Year:</strong> <%= student.academic_year %></p>
+            <% if (student.has_mc) { %>
+                <p class="card-text"><strong>Mitigating Circumstances:</strong> Yes</p>
+                <p class="card-text"><strong>MC Notes:</strong> <%= student.mc_notes %></p>
+            <% } else { %>
+                <p class="card-text"><strong>Mitigating Circumstances:</strong> No</p>
+            <% } %>
+            <% if (classification) { %>
+                <p class="card-text"><strong>Classification:</strong> <%= classification.classification_code %></p>
+            <% } else { %>
+                <p class="card-text"><strong>Classification:</strong> Pending</p>
+            <% } %> 
+        </div>
+    </div>
+
+    <a href="/officer/students/<%= student.id %>/add-module?programme=<%= programmeId %>" class="btn btn-sm btn-outline-secondary mb-3">Add Module Result</a>
+    <h3 class="mb-3">Module Results</h3>
+    <table class="table table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Module Code</th>
+                <th>Module Title</th>
+                <th>Mark</th>
+                <th>Year</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (modules.length === 0) { %>
+                <tr>
+                    <td colspan="3">No module results available.</td>
+                </tr>
+            <% } else { %>
+                <% modules.forEach(module => { %>
+                    <tr>
+                        <td><%= module.module_code %></td>
+                        <td><%= module.module_name %></td>
+                        <td><%= module.module.mark %></td>
+                        <td><%= module.year_of_study %></td>
+                        <td>
+                            <% if (module.is_resit) { %>
+                                <span class="badge bg-warning text-dark">Resit</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } %>
+        </tbody>
+    </table>
+
+    <h3 class="mb-3">Classification Results</h3>
+    <table class="table table-hover">
+        <% if (!classification) { %>
+            <tr>
+                <td colspan="2">No classification results available.</td>
+            </tr>
+        <% } else { %>
+            <tr>
+                <td><%= classification.classification_code %></td>
+                <td><%= new Date(classification.created_at).toLocaleDateString('en-GB') %></td>
+            </tr>
+        <% } %>
+    </table>
+
+
+
+<%- include('../partials/footer') %>

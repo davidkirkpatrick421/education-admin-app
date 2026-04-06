@@ -430,17 +430,36 @@ api.post('/officer/students', async (req, res) => {
 
 api.get('/officer/students/:id', async (req, res) => {
     const studentId = req.params.id;
+
     try {
-        const [rows] = await db.promise().query(
+        const [student] = await db.promise().query(
             `SELECT id, student_number, first_name, surname, academic_year, has_mc, mc_notes 
             FROM students WHERE id = ?`,
             [studentId]
         );
 
-        if (rows.length === 0) {
+        if (student.length === 0) {
             return res.status(404).json({ error: 'Student not found' });
         }
-        res.json({ student: rows[0] });
+
+        const [modules] = await db.promise().query(
+            `SELECT * FROM module_results 
+            WHERE student_id = ? 
+            ORDER BY year_of_study, module_name`,
+            [studentId]
+        );
+        const [classification] = await db.promise().query(
+            `SELECT * FROM classification_results 
+            WHERE student_id = ?`,
+            [studentId]
+        );
+
+
+        res.json({
+            student: student[0],
+            modules: modules,
+            classification: classification[0] || null
+        });
     } catch (error) {
         console.error('Error fetching student details:', error.message);
         res.status(500).json({ error: 'Error fetching student details' });
