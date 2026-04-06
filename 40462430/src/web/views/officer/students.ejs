@@ -1,6 +1,12 @@
 <%- include('../partials/head', {title: 'Students'}) %>
 <%- include('../partials/nav') %>
 
+
+<a href="/officer/students/new?programme=<%= programmeId %>" class="btn btn-success mb-3">Add New Student</a>
+
+    <% if (error) { %>
+        <div class="alert alert-warning"><%= error %></div>
+    <% } %>
 <table class="table table-hover">
         <thead class="table-dark">
             <tr>
@@ -27,6 +33,7 @@
                     <td>
                         <% if (student.has_mc) { %>
                             <span class="badge bg-warning text-dark">MC</span>
+                            <small class="text-muted"><%= student.mc_notes %></small>
                         <% } %>
                     </td>
                     <td>

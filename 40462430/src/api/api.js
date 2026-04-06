@@ -384,8 +384,10 @@ api.get('/officer/stats/:programme_id', async (req, res) => {
 });
 
 api.get('/officer/students/:programme_id', async (req, res) => {
-    const { programme_id } = req.params;
 
+
+    const { programme_id } = req.params;
+    console.log('API students endpoint hit, programme_id:', programme_id);
     try {
         const [rows] = await db.promise().query(
             `SELECT id, student_number, first_name, surname, academic_year, has_mc, mc_notes, created_at
@@ -400,7 +402,31 @@ api.get('/officer/students/:programme_id', async (req, res) => {
     }
 });
 
+api.post('/officer/students', async (req, res) => {
+    console.log('API POST students hit');
+    console.log('req.body:', req.body);
 
+    const { student_number, first_name, surname, programme_id, academic_year } = req.body;
+    let has_mc; if (req.body.has_mc === 'on') {
+        has_mc = 1;
+    } else {
+        has_mc = 0;
+    }
+    const mc_notes = req.body.mc_notes || null;
+
+    try {
+        await db.promise().query(
+            `INSERT INTO students 
+            (student_number, first_name, surname, programme_id, academic_year, has_mc, mc_notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [student_number, first_name, surname, programme_id, academic_year, has_mc, mc_notes]
+        );
+        res.status(201).json({ message: 'Student added successfully' });
+    } catch (error) {
+        console.error('Error adding student:', error.message);
+        res.status(500).json({ error: 'Error adding student' });
+    }
+});
 
 api.listen(PORT, () => {
     console.log(`API is running on port ${PORT}`);

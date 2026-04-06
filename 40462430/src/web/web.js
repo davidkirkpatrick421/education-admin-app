@@ -389,26 +389,93 @@ web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
 });
 
 web.get('/officer/students', isAuthenticated, isOfficer, async (req, res) => {
+
+
+
     if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
         return res.render('officer/students', {
-            students: null,
+            students: [],
+            assignments: [],
+            programmeId: null,
             error: 'You have no active programme assignments. Please contact administrator.'
         });
     }
+    const assignments = req.session.user.assignments;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
 
-    const programme = req.session.user.assignments[0];
+    console.log('Fetching students for programme:', programmeId);
+    console.log('API URL:', `${process.env.API_URL}/officer/students/${programmeId}`);
 
     try {
-        const studentsResult = await axios.get(`${process.env.API_URL}/officer/students/${programme.programme_id}`);
+        const studentsResult = await axios.get(`${process.env.API_URL}/officer/students/${programmeId}`);
         res.render('officer/students', {
             students: studentsResult.data.students,
+            assignments: assignments,
+            programmeId: programmeId,
             error: null
         });
     } catch (error) {
         console.error('Error fetching students:', error.message);
         res.render('officer/students', {
-            students: null,
+            students: [],
+            assignments,
+            programmeId: programmeId,
             error: 'Error fetching students'
+        });
+    }
+});
+
+web.get('/officer/students/new', isAuthenticated, isOfficer, async (req, res) => {
+    if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
+        return res.render('officer/dashboard', {
+            error: 'You have no active programme assignments. Please contact administrator.'
+        });
+    }
+
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+
+    try {
+        res.render('officer/students-new', {
+            programmeId,
+            error: null
+        });
+    } catch (error) {
+        console.error('Error fetching form data:', error.message);
+        res.render('officer/students-new', {
+            programmeId: null,
+            error: 'Error fetching form data'
+        });
+    }
+
+});
+
+web.post('/officer/students/new', isAuthenticated, isOfficer, async (req, res) => {
+    console.log('POST students hit');
+    console.log('req.body:', req.body);
+    console.log('API URL:', `${process.env.API_URL}/officer/students`);
+
+    const { student_number, first_name, surname, academic_year, has_mc, mc_notes, programme_id } = req.body;
+
+    if (!student_number || !first_name || !surname || !academic_year || !programme_id) {
+        return res.render('officer/students-new', {
+            programmeId: programme_id,
+            error: 'All fields except mitigating circumstances notes are required'
+        });
+    };
+
+    try {
+        await axios.post(`${process.env.API_URL}/officer/students`, req.body);
+        console.log('Student created successfully');
+        res.redirect(`/officer/students?programme=${programme_id}`);
+    } catch (error) {
+        console.error('Error creating student:', error.message);
+        const errorMessage = error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Error creating student';
+
+        res.render('officer/students-new', {
+            programmeId: programme_id,
+            error: errorMessage
         });
     }
 });
