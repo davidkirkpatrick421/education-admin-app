@@ -587,6 +587,38 @@ api.post('/officer/students/:id/classify', async (req, res) => {
 
         const classificationResult = classifyStudent(student[0], modules, programmeRules[0]);
 
+        
+
+        await db.promise().query(
+            `INSERT INTO classification_results 
+            (student_id, programme_id, year2_average, year3_average, final_average, classification_code, classification_label, is_eligible, ineligibility_reason, boundary_flag, rationale_log, calculated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            ON DUPLICATE KEY UPDATE
+            year2_average = VALUES(year2_average),
+            year3_average = VALUES(year3_average),
+            final_average = VALUES(final_average),
+            classification_code = VALUES(classification_code),
+            classification_label = VALUES(classification_label),
+            is_eligible = VALUES(is_eligible),
+            ineligibility_reason = VALUES(ineligibility_reason),
+            boundary_flag = VALUES(boundary_flag),
+            rationale_log = VALUES(rationale_log),
+            calculated_at = NOW()`,
+            [
+                student[0].id,
+                student[0].programme_id,
+                classificationResult.year2_average,
+                classificationResult.year3_average,
+                classificationResult.final_average,
+                classificationResult.classification_code,
+                classificationResult.classification_label,
+                classificationResult.eligible ? 1 : 0,
+                classificationResult.ineligibility_reason,
+                classificationResult.boundary_flag ? 1 : 0,
+                JSON.stringify(classificationResult.rationale)
+            ]
+        );
+
         res.json(classificationResult);
     } catch (error) {
         console.error('Error classifying student:', error.message);

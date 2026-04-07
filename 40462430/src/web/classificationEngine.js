@@ -92,14 +92,14 @@ function classifyStudent(student, modules, programmeRules) {
 
 
     // Calculate weighted average based on programme rules
-    const year2Average = year2ModulesCapped.reduce((sum, m) => sum + (m.mark * m.credits), 0) / year2CreditsPassed;
-    const year3Average = year3ModulesCapped.reduce((sum, m) => sum + (m.mark * m.credits), 0) / year3CreditsPassed;
-    rationale.push({ type: 'ok', message: `Year 2 average - ${year2Average.toFixed(2)}` });
-    rationale.push({ type: 'ok', message: `Year 3 average - ${year3Average.toFixed(2)}` });
+    const year2_average = year2ModulesCapped.reduce((sum, m) => sum + (m.mark * m.credits), 0) / year2CreditsPassed;
+    const year3_average = year3ModulesCapped.reduce((sum, m) => sum + (m.mark * m.credits), 0) / year3CreditsPassed;
+    rationale.push({ type: 'ok', message: `Year 2 average - ${year2_average.toFixed(2)}` });
+    rationale.push({ type: 'ok', message: `Year 3 average - ${year3_average.toFixed(2)}` });
 
 
     // Calculate final average based on programme rules
-    const finalAverage = (year2Average * programmeRules.y2_weight) + (year3Average * programmeRules.y3_weight);
+    const finalAverage = (year2_average * programmeRules.y2_weight) + (year3_average * programmeRules.y3_weight);
     rationale.push({ type: 'ok', message: `Final average - ${finalAverage.toFixed(2)}` });
 
     // Determine classification based on final average and classification boundaries
@@ -126,9 +126,9 @@ function classifyStudent(student, modules, programmeRules) {
     return {
         eligible: true,
         ineligibility_reason: null,
-        year2Average: parseFloat(year2Average.toFixed(4)),
-        year3Average: parseFloat(year3Average.toFixed(4)),
-        classification: classification.code,
+        year2_average: parseFloat(year2_average.toFixed(4)),
+        year3_average: parseFloat(year3_average.toFixed(4)),
+        classification_code: classification.code,
         classification_label: classification.label,
         final_average: parseFloat(finalAverage.toFixed(4)),
         boundary_flag: boundaryFlag,
