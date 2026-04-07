@@ -65,9 +65,15 @@ function classifyStudent(student, modules, programmeRules) {
     rationale.push({ type: 'ok', message: `Year 3 passed - ${year3CreditsPassed}/${CREDITS_PER_YEAR} credits passed` });
 
     // Apply resit cap if enabled in programme rules
-    const applyResitCap = (modules, programmeRules) => {
+    const applyResitCap = (modules, programmeRules, resitCapLog) => {
         return modules.map(m => {
             if (m.is_resit && programmeRules.resit_cap_enabled && m.mark > programmeRules.resit_cap_mark) {
+                resitCapLog.push({
+                    module_code: m.module_code,
+                    module_name: m.module_name,
+                    original_mark: m.mark,
+                    capped_mark: programmeRules.resit_cap_mark
+                });
                 return {
                     id: m.id,
                     student_id: m.student_id,
@@ -83,18 +89,29 @@ function classifyStudent(student, modules, programmeRules) {
         });
     };
 
+    const resitCapLog = [];
 
     // Calculate yearly averages with resit cap applied if applicable, otherswise use original marks
-    const year2ModulesCapped = applyResitCap(year2Modules, programmeRules);
-    const year3ModulesCapped = applyResitCap(year3Modules, programmeRules);
-    rationale.push({ type: 'ok', message: `Year 2 modules capped - ${year2ModulesCapped.length} modules capped` });
-    rationale.push({ type: 'ok', message: `Year 3 modules capped - ${year3ModulesCapped.length} modules capped` });
+    const year2ModulesCapped = applyResitCap(year2Modules, programmeRules, resitCapLog);
+    const year3ModulesCapped = applyResitCap(year3Modules, programmeRules, resitCapLog);
+
+    if (resitCapLog.length > 0) {
+        resitCapLog.forEach(log => {
+            rationale.push({
+                type: 'warn',
+                message: `Resit cap applied to ${log.module_code}:${log.module_name} - original mark ${log.original_mark} capped to ${log.capped_mark}`
+            });
+        });
+    } else {
+        rationale.push({ type: 'ok', message: 'No resit caps applied' });
+    }
 
 
     // Calculate weighted average based on programme rules
     const year2_average = year2ModulesCapped.reduce((sum, m) => sum + (m.mark * m.credits), 0) / year2CreditsPassed;
-    const year3_average = year3ModulesCapped.reduce((sum, m) => sum + (m.mark * m.credits), 0) / year3CreditsPassed;
     rationale.push({ type: 'ok', message: `Year 2 average - ${year2_average.toFixed(2)}` });
+
+    const year3_average = year3ModulesCapped.reduce((sum, m) => sum + (m.mark * m.credits), 0) / year3CreditsPassed;
     rationale.push({ type: 'ok', message: `Year 3 average - ${year3_average.toFixed(2)}` });
 
 
@@ -106,6 +123,15 @@ function classifyStudent(student, modules, programmeRules) {
     const classification = CLASSIFICATION_BOUNDARIES.find(
         b => finalAverage >= b.min && finalAverage <= b.max
     );
+
+    if (!classification) {
+        rationale.push({ type: 'fail', message: 'Classification failed - no classification band matched' });
+        return {
+            eligible: false,
+            ineligibility_reason: 'Classification failed - no classification band matched',
+            rationale: rationale
+        };
+    }
     rationale.push({ type: 'ok', message: `Classification - ${classification.label}` });
 
     // Check if final average is within boundary threshold of next classification and set flag and distance if so
@@ -120,8 +146,18 @@ function classifyStudent(student, modules, programmeRules) {
             break;
         }
     }
-    rationale.push({ type: 'warn', message: `Boundary flag - ${boundaryFlag}` });
-    rationale.push({ type: 'warn', message: `Boundary distance - ${boundaryDistance?.toFixed(2)}` });
+
+    if (boundaryFlag) {
+        rationale.push({
+            type: 'warn',
+            message: `Boundary - Final average ${finalAverage.toFixed(2)}% is within ${boundaryDistance?.toFixed(2)}% points of classification boundary`
+        });
+    } else {
+        rationale.push({
+            type: 'ok',
+            message: 'No boundary conditions detected within threshold'
+        });
+    }
 
     return {
         eligible: true,
