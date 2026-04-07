@@ -393,9 +393,14 @@ api.get('/officer/students/programme/:programme_id', async (req, res) => {
     console.log('API students endpoint hit, programme_id:', programme_id);
     try {
         const [rows] = await db.promise().query(
-            `SELECT id, student_number, first_name, surname, academic_year, has_mc, mc_notes, created_at
-            FROM students 
-            WHERE programme_id = ?`,
+            `SELECT students.*,
+            classification_results.classification_code, 
+            classification_results.classification_label
+            FROM students
+            LEFT JOIN classification_results 
+            ON students.id = classification_results.student_id
+            WHERE students.programme_id = ?
+            ORDER BY students.surname, students.first_name`,
             [programme_id]
         );
         res.json({ students: rows });
@@ -587,7 +592,7 @@ api.post('/officer/students/:id/classify', async (req, res) => {
 
         const classificationResult = classifyStudent(student[0], modules, programmeRules[0]);
 
-        
+
 
         await db.promise().query(
             `INSERT INTO classification_results 

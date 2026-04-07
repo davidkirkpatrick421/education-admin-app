@@ -37,7 +37,11 @@
                         <% } %>
                     </td>
                     <td>
-                        <span class="badge bg-secondary">Pending</span>
+                        <% if (student.classification_code) { %>
+                            <span class="badge bg-success"><%= student.classification_code %></span>
+                        <% } else { %>
+                            <span class="badge bg-secondary">Pending</span>
+                        <% } %>
                     </td>
                     <td>
                         <a href="/officer/students/<%= student.id %>?programme=<%= programmeId %>" class="btn btn-sm btn-outline-primary">View Details</a>

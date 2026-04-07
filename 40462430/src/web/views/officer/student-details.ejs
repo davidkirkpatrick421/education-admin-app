@@ -76,7 +76,14 @@
         <% } else { %>
             <tr>
                 <td><%= classification.classification_code %></td>
-                <td><%= new Date(classification.created_at).toLocaleDateString('en-GB') %></td>
+                <td><%= classification.classification_label %></td>
+                <td><%= classification.final_average %></td>
+                <td><%= classification.is_eligible ? 'Yes' : 'No' %></td>
+                <% if (!classification.is_eligible && classification.ineligibility_reason) { %>
+                    <td><strong>Ineligibility Reason:</strong> <%= classification.ineligibility_reason %></td>
+                <% } %>
+                
+                <td><%= new Date(classification.calculated_at).toLocaleDateString('en-GB') %></td>
             </tr>
         <% } %>
     </table>
