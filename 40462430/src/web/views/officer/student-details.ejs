@@ -82,11 +82,35 @@
                 <% if (!classification.is_eligible && classification.ineligibility_reason) { %>
                     <td><strong>Ineligibility Reason:</strong> <%= classification.ineligibility_reason %></td>
                 <% } %>
-                
+
                 <td><%= new Date(classification.calculated_at).toLocaleDateString('en-GB') %></td>
             </tr>
         <% } %>
     </table>
+
+    <% if (classification && classification.rationale_log) { %>
+    <div class="card mb-4">
+        <div class="card-header">Classification Rationale</div>
+        <div class="card-body">
+            <ul class="list-unstyled mb-0">
+                <% classification.rationale_log.forEach(entry => { %>
+                    <li class="mb-1">
+                        <% if (entry.type === 'ok') { %>
+                            <span class="text-success">✓</span>
+                        <% } else if (entry.type === 'warn') { %>
+                            <span class="text-warning">⚠</span>
+                        <% } else if (entry.type === 'fail') { %>
+                            <span class="text-danger">✗</span>
+                        <% } else { %>
+                            <span class="text-muted">ℹ</span>
+                        <% } %>
+                        <%= entry.message %>
+                    </li>
+                <% }) %>
+            </ul>
+        </div>
+    </div>
+<% } %>
 
 
 
