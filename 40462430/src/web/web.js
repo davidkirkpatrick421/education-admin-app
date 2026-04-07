@@ -607,6 +607,70 @@ web.post('/officer/students/:id/delete', isAuthenticated, isOfficer, async (req,
     }
 });
 
+web.get('/officer/students/:id/modules/new', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    try {
+        const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to add module for student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        res.render('officer/modules-new', {
+            student: student,
+            programmeId,
+            error: null
+        });
+    } catch (error) {
+        console.error('Error fetching student details for adding module:', error.message);
+        res.render('officer/modules-new', {
+            student: null,
+            programmeId,
+            error: 'Error fetching student details'
+        });
+    }   
+});
+
+web.post('/officer/students/:id/modules', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+
+    let studentDetails;
+    try {
+        studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to add module for student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        await axios.post(`${process.env.API_URL}/officer/students/${studentId}/modules`, req.body);
+        console.log('Module added successfully');
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
+    } catch (error) {
+        console.error('Error adding module:', error.message);
+        const errorMessage = error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Error adding module';
+
+        res.render('officer/modules-new', {
+            student: studentDetails ? studentDetails.data.student : { id: studentId },
+            programmeId,
+            error: errorMessage
+        });
+    }
+});
+
 web.get('/logout', (req, res) => {
     req.session.destroy();
     console.log('User logged out successfully');

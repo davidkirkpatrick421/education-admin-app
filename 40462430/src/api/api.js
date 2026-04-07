@@ -511,6 +511,49 @@ api.post('/officer/students/:id/delete', async (req, res) => {
     }
 });
 
+// API endpoint to add or update a module result for a student for an officer based on assigned programme
+api.post('/officer/students/:id/modules', async (req, res) => {
+    const studentId = req.params.id;
+    const { module_code, module_name, mark, year_of_study, credits } = req.body;
+
+    let is_resit;
+    if (req.body.is_resit === 'on') {
+        is_resit = 1;
+    } else {
+        is_resit = 0;
+    }
+
+    try {
+        const [existing] = await db.promise().query(
+            `SELECT id FROM module_results 
+            WHERE student_id = ? 
+            AND module_code = ? AND year_of_study = ?`,
+            [studentId, module_code, year_of_study]
+        );
+
+        if (existing.length > 0) {
+            await db.promise().query(
+            `UPDATE module_results 
+            SET mark = ?, is_resit = ?
+            WHERE student_id = ? AND module_code = ? AND year_of_study = ?`,
+                [mark, is_resit, studentId, module_code, year_of_study]
+            );
+            return res.json({ message: 'Module result updated successfully' });
+        } else {
+            await db.promise().query(
+                `INSERT INTO module_results 
+            (student_id, module_code, module_name, mark, year_of_study, credits, is_resit) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [studentId, module_code, module_name, mark, year_of_study, credits, is_resit]
+            );
+            res.status(201).json({ message: 'Module result added successfully' });
+        }
+    } catch (error) {
+        console.error('Error adding module result:', error.message);
+        res.status(500).json({ error: 'Error adding module result' });
+    }
+});
+
 api.listen(PORT, () => {
     console.log(`API is running on port ${PORT}`);
 });

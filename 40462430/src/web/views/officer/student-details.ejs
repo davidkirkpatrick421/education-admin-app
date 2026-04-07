@@ -1,7 +1,7 @@
 <%- include('../partials/head', {title: `Student Detail - ${student.first_name} ${student.surname}`}) %>
 <%- include('../partials/nav') %>
 
-<a href="/officer/students?programme=<%= programmeId %>">← Back to Students</a>
+<a href="/officer/students?programme=<%= programmeId %> " class="btn btn-secondary">Back to Students</a>
 
     <% if (error) { %>
         <div class="alert alert-warning"><%= error %></div>
@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <a href="/officer/students/<%= student.id %>/add-module?programme=<%= programmeId %>" class="btn btn-sm btn-outline-secondary mb-3">Add Module Result</a>
+    <a href="/officer/students/<%= student.id %>/modules/new?programme=<%= programmeId %>" class="btn btn-sm btn-outline-secondary mb-3">Add Module Result</a>
     <h3 class="mb-3">Module Results</h3>
     <table class="table table-hover">
         <thead class="table-dark">
@@ -51,7 +51,7 @@
                     <tr>
                         <td><%= module.module_code %></td>
                         <td><%= module.module_name %></td>
-                        <td><%= module.module.mark %></td>
+                        <td><%= module.mark %></td>
                         <td><%= module.year_of_study %></td>
                         <td>
                             <% if (module.is_resit) { %>

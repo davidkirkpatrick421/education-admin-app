@@ -1,0 +1,48 @@
+<%- include('../partials/head', {title: `Add Module Result - ${student.first_name} ${student.surname}`}) %>
+<%- include('../partials/nav') %>
+
+
+<a href="/officer/students/<%= student.id %>?programme=<%= programmeId %>" class="btn btn-outline-secondary">Back to Student Details</a>
+
+
+<h2 class="mb-4">Add Module Result for <%= student.first_name %> <%= student.surname %></h2>
+
+<% if (error) { %>
+        <div class="alert alert-warning"><%= error %></div>
+    <% } %>
+
+<form action="/officer/students/<%= student.id %>/modules" method="POST">
+    <div class="mb-3">
+        <label class="form-label">Module Code</label>
+        <input type="text" name="module_code" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Module Title</label>
+        <input type="text" name="module_name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Mark</label>
+        <input type="number" min="0" max="100" name="mark" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <select name="year_of_study" class="form-select" required>
+            <option selected>Select year of study...</option>
+            <option value="1">Year 1</option>
+            <option value="2">Year 2</option>
+            <option value="3">Year 3</option>
+            </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Credits</label>
+        <input type="number" min="0" name="credits" class="form-control" required>
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" name="is_resit" class="form-check-input" id="isResitCheck">
+        <label class="form-check-label" for="isResitCheck">Resit</label>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Add Module Result</button>
+        <a href="/officer/students/<%= student.id %>?programme=<%= programmeId %>" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+<%- include('../partials/footer') %>
