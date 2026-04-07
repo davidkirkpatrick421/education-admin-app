@@ -2,6 +2,7 @@ import mysql from 'mysql2';
 import express from 'express';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
+import { classifyStudent } from '../web/classificationEngine.js';
 dotenv.config();
 
 const api = express();
@@ -533,7 +534,7 @@ api.post('/officer/students/:id/modules', async (req, res) => {
 
         if (existing.length > 0) {
             await db.promise().query(
-            `UPDATE module_results 
+                `UPDATE module_results 
             SET mark = ?, is_resit = ?
             WHERE student_id = ? AND module_code = ? AND year_of_study = ?`,
                 [mark, is_resit, studentId, module_code, year_of_study]
@@ -553,6 +554,47 @@ api.post('/officer/students/:id/modules', async (req, res) => {
         res.status(500).json({ error: 'Error adding module result' });
     }
 });
+
+// API endpoint to classify a student based on their module results and programme rules for an officer based on assigned programme
+api.post('/officer/students/:id/classify', async (req, res) => {
+    const studentId = req.params.id;
+
+    try {
+        const [student] = await db.promise().query(
+            `SELECT id, programme_id FROM students WHERE id = ?`,
+            [studentId]
+        );
+
+        if (student.length === 0) {
+            return res.status(404).json({ error: 'Student not found' });
+        }
+
+        const [modules] = await db.promise().query(
+            `SELECT * FROM module_results 
+            WHERE student_id = ? 
+            ORDER BY year_of_study, module_name`,
+            [studentId]
+        );
+
+        const [programmeRules] = await db.promise().query(
+            `SELECT * FROM programmes WHERE id = ?`,
+            [student[0].programme_id]
+        );
+
+        if (programmeRules.length === 0) {
+            return res.status(404).json({ error: 'Programme rules not found' });
+        }
+
+        const classificationResult = classifyStudent(student[0], modules, programmeRules[0]);
+
+        res.json(classificationResult);
+    } catch (error) {
+        console.error('Error classifying student:', error.message);
+        res.status(500).json({ error: 'Error classifying student' });
+    }
+
+});
+
 
 api.listen(PORT, () => {
     console.log(`API is running on port ${PORT}`);

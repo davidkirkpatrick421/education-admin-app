@@ -517,7 +517,7 @@ web.get('/officer/students/:id/edit', isAuthenticated, isOfficer, async (req, re
     try {
         const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
         const student = studentDetails.data.student;
-console.log('Student data:', studentDetails.data.student);
+        console.log('Student data:', studentDetails.data.student);
         const isAssigned = req.session.user.assignments.some(
             a => parseInt(a.programme_id) === parseInt(student.programme_id));
 
@@ -634,7 +634,7 @@ web.get('/officer/students/:id/modules/new', isAuthenticated, isOfficer, async (
             programmeId,
             error: 'Error fetching student details'
         });
-    }   
+    }
 });
 
 web.post('/officer/students/:id/modules', isAuthenticated, isOfficer, async (req, res) => {
@@ -668,6 +668,32 @@ web.post('/officer/students/:id/modules', isAuthenticated, isOfficer, async (req
             programmeId,
             error: errorMessage
         });
+    }
+});
+
+web.post('/officer/students/:id/classify', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+
+    let studentDetails;
+    try {
+        studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to add module for student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        const classificationResult = await axios.post(`${process.env.API_URL}/officer/students/${studentId}/classify`, { programme_id: programmeId });
+        console.log('Classification calculated successfully');
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
+    } catch (error) {
+        console.error('Error calculating classification:', error.message);
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
     }
 });
 
