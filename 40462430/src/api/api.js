@@ -395,7 +395,8 @@ api.get('/officer/students/programme/:programme_id', async (req, res) => {
         const [rows] = await db.promise().query(
             `SELECT students.*,
             classification_results.classification_code, 
-            classification_results.classification_label
+            classification_results.classification_label,
+            classification_results.is_eligible
             FROM students
             LEFT JOIN classification_results 
             ON students.id = classification_results.student_id

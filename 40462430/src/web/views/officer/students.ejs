@@ -13,7 +13,7 @@
                 <th>Student Number</th>
                 <th>Name</th>
                 <th>Academic Year</th>
-                <th>MC</th>
+                <th>Mitigating Circumstances</th>
                 <th>Classification</th>
             </tr>
         </thead>
@@ -39,6 +39,8 @@
                     <td>
                         <% if (student.classification_code) { %>
                             <span class="badge bg-success"><%= student.classification_code %></span>
+                        <% } else if (student.is_eligible === 0) { %>
+                            <span class="badge bg-danger">Ineligible</span>
                         <% } else { %>
                             <span class="badge bg-secondary">Pending</span>
                         <% } %>
