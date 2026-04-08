@@ -64,13 +64,31 @@
         </tbody>
     </table>
 
-<% if (classification && classification.override_applied) { %>
-    <form action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Re-calculating will remove any existing override and update classification. Proceed?')">
-        <button type="submit" class="btn btn-sm btn-outline-danger mb-3">Re-Calulate Classification</button>
+<% if (classification) { %>
+    <form action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Re-calculating will remove any existing officer override and update classification. Proceed?')">
+        <button type="submit" class="btn btn-sm btn-primary mb-3">Re-Calulate Classification</button>
     </form>
 <% } else { %>
     <form action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>" method="POST">
-        <button type="submit" class="btn btn-sm btn-outline-secondary mb-3">Calculate Classification</button>
+        <button type="submit" class="btn btn-sm btn-primary mb-3">Calculate Classification</button>
+    </form>
+<% } %>
+
+<% if (classification && !classification.override_applied && !classification.confirmed_at) { %>
+    <form action="/officer/students/<%= student.id %>/classify/override?programme=<%= programmeId %>" method="POST">
+        <button type="submit" class="btn btn-sm btn-warning mb-3">Override Classification</button>
+    </form>
+<% } %>
+
+<% if (classification && !classification.confirmed_at) { %>
+    <form action="/officer/students/<%= student.id %>/classify/confirm?programme=<%= programmeId %>" method="POST">
+        <button type="submit" class="btn btn-sm btn-success mb-3">Confirm Classification</button>
+    </form>
+<% } %>
+
+<% if (classification) { %>
+    <form action="/officer/students/<%= student.id %>/classify/remove?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Removing will delete classifcation from database and cannot be undone. Classification must be recalculated. Proceed?')">
+        <button type="submit" class="btn btn-sm btn-danger mb-3">Remove Classification</button>
     </form>
 <% } %>
 
