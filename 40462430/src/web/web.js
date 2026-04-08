@@ -697,6 +697,83 @@ web.post('/officer/students/:id/classify', isAuthenticated, isOfficer, async (re
     }
 });
 
+web.post('/officer/students/:id/classify/override', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const { classification_code, classification_label, override_rationale } = req.body;
+
+    if (!override_rationale) {
+        return res.redirect(`/officer/students/${studentId}?programme=${programmeId}&error=Override rationale is required`);
+    }
+
+    let studentDetails;
+    try {
+        studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to override classification for student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        await axios.post(`${process.env.API_URL}/officer/students/${studentId}/classify/override`, {
+            classification_code,
+            override_rationale,
+            override_by: req.session.user.id
+        });
+        console.log('Classification overridden successfully');
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
+    } catch (error) {
+        console.error('Error overriding classification:', error.message);
+        const errorMessage = error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Error overriding classification';
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}&error=${encodeURIComponent(errorMessage)}`);
+    }
+
+});
+
+web.get('/officer/students/:id/classify/override', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+
+    let studentDetails;
+    try {
+        studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+        const classification = studentDetails.data.classification;
+        
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to access classification override for student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        if (!classification) {
+            return res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
+        }
+
+        res.render('officer/classify-override', {
+            student: student,
+            classification: classification,
+            programmeId,
+            error: null
+        });
+    } catch (error) {
+        console.error('Error fetching student details for classification override:', error.message);
+        res.render('officer/classify-override', {
+            student: null,
+            classification: null,
+            programmeId,
+            error: 'Error fetching student details'
+        });
+    }
+});
+
 web.get('/logout', (req, res) => {
     req.session.destroy();
     console.log('User logged out successfully');

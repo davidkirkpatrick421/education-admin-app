@@ -661,32 +661,48 @@ api.post('/officer/students/:id/classify/confirm', async (req, res) => {
 api.post('/officer/students/:id/classify/override', async (req, res) => {
     const studentId = req.params.id;
 
-    const { classification_code, classification_label, ineligibility_reason, override_by } = req.body;
 
-    const [existingClassification] = await db.promise().query(
-        `SELECT confirmed_at FROM classification_results 
-        WHERE student_id = ? `,
-        [studentId]
-    );
+    const { classification_code, override_rationale, override_by } = req.body;
 
-    if (existingClassification.length === 0) {
-        return res.status(404).json({ error: 'Classification result not found' });
-    }
+    const CLASSIFICATION_LABELS = {
+        '1st': 'First Class Honours',
+        '2:1': 'Upper Second Class Honours',
+        '2:2': 'Lower Second Class Honours',
+        '3': 'Third Class Honours',
+        'fail': 'Fail'
+    };
 
-    if (existingClassification[0].confirmed_at) {
-        return res.status(403).json({ error: 'Cannot override a confirmed classification' });
+    const classification_label = CLASSIFICATION_LABELS[classification_code];
+    if (!classification_label) {
+        return res.status(400).json({ error: 'Invalid classification code' });
     }
 
     try {
+
+        const [existingClassification] = await db.promise().query(
+            `SELECT confirmed_at 
+            FROM classification_results 
+            WHERE student_id = ? `,
+            [studentId]
+        );
+
+        if (existingClassification.length === 0) {
+            return res.status(404).json({ error: 'Classification result not found' });
+        }
+
+        if (existingClassification[0].confirmed_at) {
+            return res.status(403).json({ error: 'Cannot override a confirmed classification' });
+        }
         await db.promise().query(
             `UPDATE classification_results 
             SET override_applied = 1,
-            override_classification = ?,
+            classification_code = ?,
+            classification_label = ?,
             override_rationale = ?,
             override_by = ?,
             override_at = NOW()
             WHERE student_id = ? `,
-            [override_classification, override_rationale, override_by, studentId]
+            [classification_code, classification_label, override_rationale, override_by, studentId]
         );
         res.json({ message: 'Classification overridden successfully' });
     } catch (error) {

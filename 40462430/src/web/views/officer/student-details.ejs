@@ -75,9 +75,7 @@
 <% } %>
 
 <% if (classification && !classification.override_applied && !classification.confirmed_at) { %>
-    <form action="/officer/students/<%= student.id %>/classify/override?programme=<%= programmeId %>" method="POST">
-        <button type="submit" class="btn btn-sm btn-warning mb-3">Override Classification</button>
-    </form>
+    <a href="/officer/students/<%= student.id %>/classify/override?programme=<%= programmeId %>" class="btn btn-sm btn-warning">Override Classification</a>
 <% } %>
 
 <% if (classification && !classification.confirmed_at) { %>
@@ -113,6 +111,19 @@
         <% } %>
     </table>
 
+    <% if (classification.override_applied) { %>
+    <div class="card mb-4">
+        <span class="badge bg-warning text-dark">Override Applied</span>
+        <div class="card-header">Override Details</div>
+        <div class="card-body">
+            <p><strong>Override Rationale:</strong> <%= classification.override_rationale %></p>
+            <p><strong>Overridden By:</strong> <%= classification.override_by %></p>
+            <p><strong>Overridden At:</strong> <%= new Date(classification.override_at).toLocaleDateString('en-GB') %></p>
+        </div>
+    </div>
+    
+<% } %>
+
     <% if (classification && classification.rationale_log) { %>
     <div class="card mb-4">
         <div class="card-header">Classification Rationale</div>
@@ -136,6 +147,8 @@
         </div>
     </div>
 <% } %>
+
+
 
 
 
