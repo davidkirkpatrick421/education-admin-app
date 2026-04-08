@@ -609,7 +609,14 @@ api.post('/officer/students/:id/classify', async (req, res) => {
             ineligibility_reason = VALUES(ineligibility_reason),
             boundary_flag = VALUES(boundary_flag),
             rationale_log = VALUES(rationale_log),
-            calculated_at = NOW()`,
+            calculated_at = NOW(),
+            override_applied = 0,
+            override_classification = NULL,
+            override_rationale = NULL,
+            override_by = NULL,
+            override_at = NULL,
+            confirmed_by = NULL,
+            confirmed_at = NULL`,
             [
                 student[0].id,
                 student[0].programme_id,
@@ -640,8 +647,8 @@ api.post('/officer/students/:id/classify/confirm', async (req, res) => {
     try {
         await db.promise().query(
             `UPDATE classification_results 
-            SET classification_code = ?, classification_label = ? 
-            WHERE student_id = ?`,
+            SET classification_code = ?, classification_label = ?
+            WHERE student_id = ? `,
             [classification_code, classification_label, studentId]
         );
         res.json({ message: 'Classification confirmed successfully' });
@@ -658,7 +665,7 @@ api.post('/officer/students/:id/classify/override', async (req, res) => {
 
     const [existingClassification] = await db.promise().query(
         `SELECT confirmed_at FROM classification_results 
-        WHERE student_id = ?`,
+        WHERE student_id = ? `,
         [studentId]
     );
 
@@ -678,7 +685,7 @@ api.post('/officer/students/:id/classify/override', async (req, res) => {
             override_rationale = ?,
             override_by = ?,
             override_at = NOW()
-            WHERE student_id = ?`,
+            WHERE student_id = ? `,
             [override_classification, override_rationale, override_by, studentId]
         );
         res.json({ message: 'Classification overridden successfully' });
@@ -697,7 +704,7 @@ api.post('/officer/students/:id/classify/remove', async (req, res) => {
 
     try {
         await db.promise().query(
-            `DELETE FROM classification_results WHERE student_id = ?`,
+            `DELETE FROM classification_results WHERE student_id = ? `,
             [studentId]
         );
         res.json({ message: 'Classification removed successfully' });
