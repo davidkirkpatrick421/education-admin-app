@@ -390,7 +390,7 @@ api.get('/officer/students/programme/:programme_id', async (req, res) => {
 
 
     const { programme_id } = req.params;
-    console.log('API students endpoint hit, programme_id:', programme_id);
+
     try {
         const [rows] = await db.promise().query(
             `SELECT students.*,
@@ -631,6 +631,80 @@ api.post('/officer/students/:id/classify', async (req, res) => {
         res.status(500).json({ error: 'Error classifying student' });
     }
 
+});
+
+api.post('/officer/students/:id/classify/confirm', async (req, res) => {
+    const studentId = req.params.id;
+    const { classification_code, classification_label } = req.body;
+
+    try {
+        await db.promise().query(
+            `UPDATE classification_results 
+            SET classification_code = ?, classification_label = ? 
+            WHERE student_id = ?`,
+            [classification_code, classification_label, studentId]
+        );
+        res.json({ message: 'Classification confirmed successfully' });
+    } catch (error) {
+        console.error('Error confirming classification:', error.message);
+        res.status(500).json({ error: 'Error confirming classification' });
+    }
+});
+
+api.post('/officer/students/:id/classify/override', async (req, res) => {
+    const studentId = req.params.id;
+
+    const { classification_code, classification_label, ineligibility_reason, override_by } = req.body;
+
+    const [existingClassification] = await db.promise().query(
+        `SELECT confirmed_at FROM classification_results 
+        WHERE student_id = ?`,
+        [studentId]
+    );
+
+    if (existingClassification.length === 0) {
+        return res.status(404).json({ error: 'Classification result not found' });
+    }
+
+    if (existingClassification[0].confirmed_at) {
+        return res.status(403).json({ error: 'Cannot override a confirmed classification' });
+    }
+
+    try {
+        await db.promise().query(
+            `UPDATE classification_results 
+            SET override_applied = 1,
+            override_classification = ?,
+            override_rationale = ?,
+            override_by = ?,
+            override_at = NOW()
+            WHERE student_id = ?`,
+            [override_classification, override_rationale, override_by, studentId]
+        );
+        res.json({ message: 'Classification overridden successfully' });
+    } catch (error) {
+        console.error('Error overriding classification:', error.message);
+        res.status(500).json({ error: 'Error overriding classification' });
+    }
+});
+
+api.post('/officer/students/:id/classify/remove', async (req, res) => {
+    const studentId = req.params.id;
+
+    if (classification.confirmed_at) {
+        return res.status(400).json({ error: 'Cannot remove a confirmed classification' });
+    }
+
+    try {
+        await db.promise().query(
+            `DELETE FROM classification_results WHERE student_id = ?`,
+            [studentId]
+        );
+        res.json({ message: 'Classification removed successfully' });
+    } catch (error) {
+        console.error('Error removing classification:', error.message);
+        res.status(500).json({ error: 'Error removing classification' });
+    }
 });
 
 
