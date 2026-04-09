@@ -23,6 +23,11 @@
                 <p class="card-text"><strong>Mitigating Circumstances:</strong> No</p>
             <% } %>
             <% if (classification) { %>
+                <% if (classification.confirmed_at) { %>
+                    <span class="badge bg-success">Classification Confirmed</span>
+                <% } else if (classification.override_applied) { %>
+                    <span class="badge bg-warning text-dark">Override Applied</span>
+                <% }  %>
                 <p class="card-text"><strong>Classification:</strong> <%= classification.classification_code %></p>
             <% } else { %>
                 <p class="card-text"><strong>Classification:</strong> Pending</p>

@@ -396,7 +396,9 @@ api.get('/officer/students/programme/:programme_id', async (req, res) => {
             `SELECT students.*,
             classification_results.classification_code, 
             classification_results.classification_label,
-            classification_results.is_eligible
+            classification_results.is_eligible,
+            classification_results.confirmed_at,
+            classification_results.override_applied
             FROM students
             LEFT JOIN classification_results 
             ON students.id = classification_results.student_id
@@ -642,14 +644,29 @@ api.post('/officer/students/:id/classify', async (req, res) => {
 
 api.post('/officer/students/:id/classify/confirm', async (req, res) => {
     const studentId = req.params.id;
-    const { classification_code, classification_label } = req.body;
+    const { confirmed_by } = req.body;
 
     try {
+        const [existingClassification] = await db.promise().query(
+            `SELECT confirmed_at 
+            FROM classification_results 
+            WHERE student_id = ? `,
+            [studentId]
+        );
+
+        if (existingClassification.length === 0) {
+            return res.status(404).json({ error: 'Classification result not found' });
+        }
+
+        if (existingClassification[0].confirmed_at) {
+            return res.status(400).json({ error: 'Classification is already confirmed' });
+        }
+
         await db.promise().query(
             `UPDATE classification_results 
-            SET classification_code = ?, classification_label = ?
-            WHERE student_id = ? `,
-            [classification_code, classification_label, studentId]
+                SET confirmed_by = ?, confirmed_at = NOW() 
+                WHERE student_id = ?`,
+            [confirmed_by, studentId]
         );
         res.json({ message: 'Classification confirmed successfully' });
     } catch (error) {
@@ -660,8 +677,6 @@ api.post('/officer/students/:id/classify/confirm', async (req, res) => {
 
 api.post('/officer/students/:id/classify/override', async (req, res) => {
     const studentId = req.params.id;
-
-
     const { classification_code, override_rationale, override_by } = req.body;
 
     const CLASSIFICATION_LABELS = {

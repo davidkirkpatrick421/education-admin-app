@@ -38,7 +38,18 @@
                     </td>
                     <td>
                         <% if (student.classification_code) { %>
-                            <span class="badge bg-success"><%= student.classification_code %></span>
+                            <% if (student.classification_code === 'fail') { %>
+                                <span class="badge bg-danger">Fail</span>
+                            <% } else if (student.confirmed_at) { %>
+                            <span class="badge bg-success">
+                                <%= student.classification_code %> Confirmed</span>
+                        <% } else if (student.override_applied) { %>
+                            <span class="badge bg-warning">
+                                <%= student.classification_code %> Override Applied</span>
+                        <% } else { %>
+                            <span class="badge bg-primary">
+                                <%= student.classification_code %> Pending Confirmation</span>
+                            <% } %>
                         <% } else if (student.is_eligible === 0) { %>
                             <span class="badge bg-danger">Ineligible</span>
                         <% } else { %>

@@ -774,6 +774,43 @@ web.get('/officer/students/:id/classify/override', isAuthenticated, isOfficer, a
     }
 });
 
+web.post('/officer/students/:id/classify/confirm', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const { confirmed_by } = req.body;
+
+    let studentDetails;
+    try {
+        studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+        const classification = studentDetails.data.classification;
+
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to confirm classification for student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        if (!classification) {
+            return res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
+        }
+
+        await axios.post(`${process.env.API_URL}/officer/students/${studentId}/classify/confirm`, {
+            confirmed_by: req.session.user.id
+        });
+        console.log('Classification confirmed successfully');
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
+    } catch (error) {
+        console.error('Error confirming classification:', error.message);
+        const errorMessage = error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Error confirming classification';
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}&error=${encodeURIComponent(errorMessage)}`);
+    }
+});
+
 web.get('/logout', (req, res) => {
     req.session.destroy();
     console.log('User logged out successfully');
