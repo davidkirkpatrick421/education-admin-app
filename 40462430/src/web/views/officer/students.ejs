@@ -1,13 +1,27 @@
 <%- include('../partials/head', {title: 'Students'}) %>
 <%- include('../partials/nav') %>
 
+<% const totalStudents = students.length; %>
+<% const confirmedCount = students.filter(s => s.confirmed_at).length; %>
 
 <h1>Students</h1>
 <div class="d-flex gap-2">
     <a href="/officer/dashboard" class="btn btn-secondary mb-3">Back to Dashboard</a>  
-<a href="/officer/students/new?programme=<%= programmeId %>" class="btn btn-success mb-3">Add New Student</a>
-<% if (students.some(s => s.confirmed_at)) { %>
-    <a href="/officer/students/export?programme=<%= programmeId %>" class="btn btn-outline-primary mb-3">Export CSV for Exam Board</a>
+<a href="/officer/students/new?programme=<%= programmeId %>" class="btn btn-outline-primary mb-3">Add New Student</a>
+
+<% if (confirmedCount > 0) { %>
+    <% if (confirmedCount < totalStudents) { %>
+        <a href="/officer/students/export?programme=<%= programmeId %>" 
+           class="btn btn-warning"
+           onclick="return confirm('<%= confirmedCount %> of <%= totalStudents %> students confirmed. Export incomplete cohort?')">
+            Export for Exam Board (<%= confirmedCount %>/<%= totalStudents %> confirmed)
+        </a>
+    <% } else { %>
+        <a href="/officer/students/export?programme=<%= programmeId %>" 
+           class="btn btn-outline-success">
+            Export for Exam Board
+        </a>
+    <% } %>
 <% } %>
 </div>
 
@@ -24,6 +38,7 @@
                 <th>Academic Year</th>
                 <th>Mitigating Circumstances</th>
                 <th>Classification</th>
+                <th>Ineligibility Reason</th>
             </tr>
         </thead>
         <tbody>
@@ -64,6 +79,9 @@
                         <% } else { %>
                             <span class="badge bg-secondary">Pending</span>
                         <% } %>
+                    </td>
+                    <td>
+                        <%= student.ineligibility_reason || '' %>
                     </td>
                     <td>
                         <a href="/officer/students/<%= student.id %>?programme=<%= programmeId %>" class="btn btn-sm btn-outline-primary">View Details</a>
