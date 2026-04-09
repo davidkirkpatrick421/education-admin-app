@@ -381,13 +381,41 @@ api.get('/officer/stats/:programme_id', async (req, res) => {
             [programme_id]
         );
 
+        const [distribution] = await db.promise().query(
+            `SELECT classification_code, COUNT(*) as count
+            FROM classification_results
+            WHERE programme_id = ?
+            GROUP BY classification_code`,
+            [programme_id]
+        );
+
+        const distributionMap = {
+            '1st': 0,
+            '2:1': 0,
+            '2:2': 0,
+            '3rd': 0,
+            'fail': 0,
+        };
+
+        const [ineligible] = await db.promise().query(
+            `SELECT COUNT(*) as count
+            FROM classification_results
+            WHERE programme_id = ? AND is_eligible = 0`,
+            [programme_id]
+        );
+
+        distribution.forEach(row => {
+            distributionMap[row.classification_code] = row.count;
+        });
+
+        distributionMap['ineligible'] = ineligible[0].count;
 
         res.json({
             totalStudents: students.length,
             totalConfirmedClassifications: confirmedClassifications.length,
             totalPendingClassifications: pendingClassifications.length,
-            pendingReviewClassifications: pendingReviewClassifications.length
-
+            pendingReviewClassifications: pendingReviewClassifications.length,
+            distribution: distributionMap
         });
     } catch (error) {
         console.error('Error fetching officer stats:', error.message);

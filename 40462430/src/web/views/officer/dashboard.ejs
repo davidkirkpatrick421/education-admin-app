@@ -56,4 +56,79 @@
     <% } %>
     <% } %>
 
-    <%- include('../partials/footer') %>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-header">Classification Distribution</div>
+                    <div class="card-body">
+                        <p>This chart shows the distribution of classifications for students in this programme. It provides a visual overview of how many students fall into each classification category.</p>
+                        <canvas id="classificationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+            
+        
+    
+    
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const distributionData = <%- JSON.stringify([
+        stats.distribution['1st'],
+        stats.distribution['2:1'],
+        stats.distribution['2:2'],
+        stats.distribution['3rd'],
+        stats.distribution['fail'],
+        stats.distribution['ineligible']
+    ]); %>;
+
+    const ctx = document.getElementById('classificationChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['1st', '2:1', '2:2', '3rd', 'Fail', 'Ineligible'],
+            datasets: [{
+                label: 'Students',
+                data: distributionData,
+                backgroundColor: [
+                    '#198754',
+                    '#0d6efd',
+                    '#0dcaf0',
+                    '#ffc107',
+                    '#dc3545',
+                    '#6c757d'
+                ]
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            layout: {
+                
+            },
+            barThickness: 50,
+            responsive: true,
+            aspectRatio: 2,
+            plugins: {
+                legend: { display: true,
+                    labels: {
+                        color: '#000',
+                        font: {
+                            size: '12%',
+                            weight: 'bold'
+                        }
+                    }
+                },
+                title: { display: true, text: 'Student Classification Distribution', color: '#' }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+</script>
+
+<%- include('../partials/footer') %>
