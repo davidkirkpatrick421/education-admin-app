@@ -63,6 +63,15 @@
                                 <span class="badge bg-warning text-dark">Resit</span>
                             <% } %>
                         </td>
+                        <td>
+                            <% if (classification && classification.confirmed_at) { %>
+                                <span class="badge bg-secondary">Classification Confirmed - Edit Disabled</span>
+                                <button class="btn btn-sm btn-secondary" disabled>Edit</button>
+                            </span>
+                            <% } else { %>
+                            <a href="/officer/students/<%= student.id %>/modules/<%= module.id %>/edit?programme=<%= programmeId %>" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <% } %>
+                        </td>
                     </tr>
                 <% }) %>
             <% } %>
@@ -70,9 +79,9 @@
     </table>
 
 <% if (classification && classification.confirmed_at) { %>
-    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed and cannot be modified">Re-Calculate Classification</button>
-    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed and cannot be modified">Override Classification</button>
-    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed and cannot be modified">Confirm Classification</button>
+    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed - Re-Calculate Classification is disabled">Re-Calculate Classification</button>
+    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed - Override Classification is disabled">Override Classification</button>
+    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed - Confirm Classification is disabled">Confirm Classification</button>
     <form action="/officer/students/<%= student.id %>/classify/remove?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Removing will delete classification from database and cannot be undone. Proceed?')">
         <button type="submit" class="btn btn-sm btn-danger mb-3">Remove Classification</button>
     </form>

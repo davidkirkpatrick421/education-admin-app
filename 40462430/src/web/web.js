@@ -671,6 +671,86 @@ web.post('/officer/students/:id/modules', isAuthenticated, isOfficer, async (req
     }
 });
 
+web.get('/officer/students/:id/modules/:moduleId/edit', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const moduleId = req.params.moduleId;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+
+    let studentDetails;
+    try {
+        studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to edit module for student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        const moduleDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}/modules/${moduleId}`);
+
+        res.render('officer/modules-edit', {
+            student: student,
+            module: moduleDetails.data.module,
+            programmeId,
+            error: null
+        });
+    } catch (error) {
+        console.error('Error fetching module details for edit:', error.message);
+        res.render('officer/modules-edit', {
+            student: studentDetails ? studentDetails.data.student : { id: studentId },
+            module: null,
+            programmeId,
+            error: 'Error fetching module details'
+        });
+    }
+});
+
+web.post('/officer/students/:id/modules/:moduleId/edit', isAuthenticated, isOfficer, async (req, res) => {
+    const studentId = req.params.id;
+    const moduleId = req.params.moduleId;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+
+    let studentDetails;
+    try {
+        studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
+        const student = studentDetails.data.student;
+
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(student.programme_id));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to edit module for student ${studentId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
+        await axios.post(`${process.env.API_URL}/officer/students/${studentId}/modules/${moduleId}/edit`, req.body);
+        console.log('Module updated successfully');
+        res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
+    } catch (error) {
+        console.error('Error updating module:', error.message);
+        const errorMessage = error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Error updating module';
+
+        res.render('officer/modules-edit', {
+            student: studentDetails ? studentDetails.data.student : { id: studentId },
+            module: { 
+                id: moduleId,
+                module_code: req.body.module_code,
+                module_name: req.body.module_name,
+                credits: req.body.credits,
+                level: req.body.level,
+                mark: req.body.mark
+             }, 
+            programmeId,
+            error: errorMessage
+        });
+    }
+});
+
 web.post('/officer/students/:id/classify', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
     const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;

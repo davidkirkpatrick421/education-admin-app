@@ -533,6 +533,14 @@ api.post('/officer/students/:id/modules', async (req, res) => {
     }
 
     try {
+        const [classification] = await db.promise().query(
+            `SELECT confirmed_at FROM classification_results WHERE student_id = ?`,
+            [studentId]
+        );
+        if (classification.length > 0 && classification[0].confirmed_at) {
+            return res.status(400).json({ error: 'Cannot update module results for a student with a confirmed classification' });
+        }
+
         const [existing] = await db.promise().query(
             `SELECT id FROM module_results 
             WHERE student_id = ? 
@@ -560,6 +568,62 @@ api.post('/officer/students/:id/modules', async (req, res) => {
     } catch (error) {
         console.error('Error adding module result:', error.message);
         res.status(500).json({ error: 'Error adding module result' });
+    }
+});
+
+api.get('/officer/students/:id/modules/:module_id', async (req, res) => {
+    const studentId = req.params.id;
+    const moduleId = req.params.module_id;
+
+    try {
+        const [rows] = await db.promise().query(
+            `SELECT * FROM module_results 
+            WHERE id = ? AND student_id = ?`,
+            [moduleId, studentId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Module result not found' });
+        }
+        res.json({ module: rows[0] });
+    } catch (error) {
+        console.error('Error fetching module result details:', error.message);
+        res.status(500).json({ error: 'Error fetching module result details' });
+    }
+});
+
+api.post('/officer/students/:id/modules/:module_id/edit', async (req, res) => {
+    const studentId = req.params.id;
+    const moduleId = req.params.module_id;
+    const { module_code, module_name, mark, year_of_study, credits } = req.body;
+
+    let is_resit;
+    if (req.body.is_resit === 'on') {
+        is_resit = 1;
+    } else {
+        is_resit = 0;
+    }
+
+    try {
+
+        const [classification] = await db.promise().query(
+            `SELECT confirmed_at FROM classification_results WHERE student_id = ?`,
+            [studentId]
+        );
+        if (classification.length > 0 && classification[0].confirmed_at) {
+            return res.status(400).json({ error: 'Cannot update module results for a student with a confirmed classification' });
+        }
+
+        await db.promise().query(
+            `UPDATE module_results 
+            SET module_code = ?, module_name = ?, mark = ?, year_of_study = ?, credits = ?, is_resit = ?
+            WHERE id = ? AND student_id = ?`,
+            [module_code, module_name, mark, year_of_study, credits, is_resit, moduleId, studentId]
+        );
+        res.json({ message: 'Module result updated successfully' });
+    } catch (error) {
+        console.error('Error updating module result:', error.message);
+        res.status(500).json({ error: 'Error updating module result' });
     }
 });
 
@@ -594,8 +658,6 @@ api.post('/officer/students/:id/classify', async (req, res) => {
         }
 
         const classificationResult = classifyStudent(student[0], modules, programmeRules[0]);
-
-
 
         await db.promise().query(
             `INSERT INTO classification_results 
