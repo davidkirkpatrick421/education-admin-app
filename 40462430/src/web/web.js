@@ -20,8 +20,7 @@ web.use(session({
 
 import path from "path";
 import { fileURLToPath } from "url";
-import { error } from 'console';
-import { stat } from 'fs';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -402,9 +401,17 @@ web.get('/officer/students/export', isAuthenticated, isOfficer, async (req, res)
     const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
 
     try {
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(programmeId));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to programme ${programmeId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
         const exportResponse = await axios.get(`${process.env.API_URL}/officer/students/export/${programmeId}`);
 
-        const {programme, students} = exportResponse.data;
+        const { programme, students } = exportResponse.data;
 
         if (!students || students.length === 0) {
             return res.render('officer/dashboard', {
@@ -444,11 +451,11 @@ web.get('/officer/students/export', isAuthenticated, isOfficer, async (req, res)
         console.log('Export students:', JSON.stringify(exportResponse.data.students[0]));
         res.send(csvData);
 
-        } catch (error) {
-            console.error('Error exporting students:', error.message);  
-            res.redirect(`/officer/students?programme=${programmeId}`);
-        }
-    });
+    } catch (error) {
+        console.error('Error exporting students:', error.message);
+        res.redirect(`/officer/students?programme=${programmeId}`);
+    }
+});
 
 web.get('/officer/students', isAuthenticated, isOfficer, async (req, res) => {
 
@@ -464,9 +471,16 @@ web.get('/officer/students', isAuthenticated, isOfficer, async (req, res) => {
     const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
 
     console.log('Fetching students for programme:', programmeId);
-    console.log('API URL:', `${process.env.API_URL}/officer/students/${programmeId}`);
 
     try {
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(programmeId));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to programme ${programmeId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
         const studentsResult = await axios.get(`${process.env.API_URL}/officer/students/programme/${programmeId}`);
         res.render('officer/students', {
             students: studentsResult.data.students,
@@ -495,6 +509,14 @@ web.get('/officer/students/new', isAuthenticated, isOfficer, async (req, res) =>
     const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
 
     try {
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(programmeId));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to programme ${programmeId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
         res.render('officer/students-new', {
             programmeId,
             error: null
@@ -510,7 +532,7 @@ web.get('/officer/students/new', isAuthenticated, isOfficer, async (req, res) =>
 });
 
 web.post('/officer/students/new', isAuthenticated, isOfficer, async (req, res) => {
-
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
     const { student_number, first_name, surname, academic_year, has_mc, mc_notes, programme_id } = req.body;
 
     if (!student_number || !first_name || !surname || !academic_year || !programme_id) {
@@ -521,6 +543,14 @@ web.post('/officer/students/new', isAuthenticated, isOfficer, async (req, res) =
     };
 
     try {
+        const isAssigned = req.session.user.assignments.some(
+            a => parseInt(a.programme_id) === parseInt(programmeId));
+
+        if (!isAssigned) {
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to programme ${programmeId}`);
+            return res.redirect('/officer/dashboard');
+        }
+
         await axios.post(`${process.env.API_URL}/officer/students`, req.body);
         console.log('Student created successfully');
         res.redirect(`/officer/students?programme=${programme_id}`);
