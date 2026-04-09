@@ -388,6 +388,68 @@ web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
 
 });
 
+web.get('/officer/students/export', isAuthenticated, isOfficer, async (req, res) => {
+
+    if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
+        return res.render('officer/dashboard', {
+            students: [],
+            assignments: [],
+            programmeId: null,
+            error: 'You have no active programme assignments. Please contact administrator.'
+        });
+    }
+    const assignments = req.session.user.assignments;
+    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+
+    try {
+        const exportResponse = await axios.get(`${process.env.API_URL}/officer/students/export/${programmeId}`);
+
+        const {programme, students} = exportResponse.data;
+
+        if (!students || students.length === 0) {
+            return res.render('officer/dashboard', {
+                programme: programme,
+                stats: null,
+                error: 'No students found for this programme'
+            });
+        }
+
+        const lines = [];
+        lines.push('HEdClass Export');
+        lines.push(`Programme: ${programme.code} - ${programme.title}`);
+        lines.push(`Export Date: ${new Date().toLocaleDateString('en-GB')}`);
+        lines.push(`Officer: ${req.session.user.first_name} ${req.session.user.surname}`);
+        lines.push(`Total Confirmed Students: ${students.length}`);
+        lines.push('');
+        lines.push('Student Number,First Name,Surname,Final Average,Classification,Ineligibility Reason,Classification Override Applied,Override Rationale, Confirmed Date');
+
+        students.forEach(s => {
+            lines.push([
+                s.student_number,
+                `${s.first_name}`,
+                `${s.surname}`,
+                s.final_average ? parseFloat(s.final_average).toFixed(2) : 'N/A',
+                s.classification_code || 'Ineligible',
+                s.ineligibility_reason || '',
+                s.override_applied ? 'Yes' : 'No',
+                s.override_rationale ? `${s.override_rationale}` : '',
+                new Date(s.confirmed_at).toLocaleDateString('en-GB')
+            ].join(','));
+        });
+
+        res.setHeader('Content-Disposition', `attachment; filename="HEdClass Export - ${programme.code} ${programme.title} - ${new Date().toLocaleDateString('en-GB')}.csv"`);
+        res.setHeader('Content-Type', 'text/csv');
+
+        const csvData = lines.join('\n');
+        console.log('Export students:', JSON.stringify(exportResponse.data.students[0]));
+        res.send(csvData);
+
+        } catch (error) {
+            console.error('Error exporting students:', error.message);  
+            res.redirect(`/officer/students?programme=${programmeId}`);
+        }
+    });
+
 web.get('/officer/students', isAuthenticated, isOfficer, async (req, res) => {
 
     if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
@@ -737,14 +799,14 @@ web.post('/officer/students/:id/modules/:moduleId/edit', isAuthenticated, isOffi
 
         res.render('officer/modules-edit', {
             student: studentDetails ? studentDetails.data.student : { id: studentId },
-            module: { 
+            module: {
                 id: moduleId,
                 module_code: req.body.module_code,
                 module_name: req.body.module_name,
                 credits: req.body.credits,
                 level: req.body.level,
                 mark: req.body.mark
-             }, 
+            },
             programmeId,
             error: errorMessage
         });
@@ -824,7 +886,7 @@ web.get('/officer/students/:id/classify/override', isAuthenticated, isOfficer, a
         studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
         const student = studentDetails.data.student;
         const classification = studentDetails.data.classification;
-        
+
         const isAssigned = req.session.user.assignments.some(
             a => parseInt(a.programme_id) === parseInt(student.programme_id));
 

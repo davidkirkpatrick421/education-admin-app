@@ -2,7 +2,16 @@
 <%- include('../partials/nav') %>
 
 
+<h1>Students</h1>
+<div class="d-flex gap-2">
+    <a href="/officer/dashboard" class="btn btn-secondary mb-3">Back to Dashboard</a>  
 <a href="/officer/students/new?programme=<%= programmeId %>" class="btn btn-success mb-3">Add New Student</a>
+<% if (students.some(s => s.confirmed_at)) { %>
+    <a href="/officer/students/export?programme=<%= programmeId %>" class="btn btn-outline-primary mb-3">Export CSV for Exam Board</a>
+<% } %>
+</div>
+
+
 
     <% if (error) { %>
         <div class="alert alert-warning"><%= error %></div>

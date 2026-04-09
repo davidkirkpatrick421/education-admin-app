@@ -423,6 +423,43 @@ api.get('/officer/stats/:programme_id', async (req, res) => {
     }
 });
 
+api.get('/officer/students/export/:programme_id', async (req, res) => {
+    const { programme_id } = req.params;
+    try {
+        const [programme] = await db.promise().query(
+            `SELECT * FROM programmes WHERE id = ?`,
+            [programme_id]
+        );
+
+        if (programme.length === 0) {
+            return res.status(404).json({ error: 'Programme not found' });
+        }
+
+        const [students] = await db.promise().query(
+            `SELECT students.student_number, students.first_name, students.surname, 
+            classification_results.classification_code, 
+            classification_results.classification_label,
+            classification_results.is_eligible,
+            classification_results.ineligibility_reason,
+            classification_results.override_applied,
+            classification_results.override_rationale,
+            classification_results.confirmed_at,
+            classification_results.final_average
+            FROM students
+            INNER JOIN classification_results
+            ON students.id = classification_results.student_id
+            WHERE students.programme_id = ?
+            AND classification_results.confirmed_at IS NOT NULL
+            ORDER BY students.surname, students.first_name`,
+            [programme_id]
+        );
+        res.json({ programme: programme[0], students });
+    } catch (error) {
+        console.error('Error exporting classifications:', error.message);
+        res.status(500).json({ error: 'Error exporting classifications' });
+    }
+});
+
 // API endpoint to fetch all students for an officer based on assigned programme
 api.get('/officer/students/programme/:programme_id', async (req, res) => {
 
