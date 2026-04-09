@@ -357,26 +357,36 @@ api.get('/officer/stats/:programme_id', async (req, res) => {
             WHERE programme_id = ?`,
             [programme_id]
         );
-        const [classifications] = await db.promise().query(
+        const [confirmedClassifications] = await db.promise().query(
             `SELECT 
             * FROM classification_results 
             WHERE programme_id = ? 
-            AND classification_code IS NOT NULL`,
+            AND confirmed_at IS NOT NULL`,
             [programme_id]
         );
 
-        /*  const [stats] = await db.promise().query(
-              `SELECT COUNT(*) as total_assignments FROM officer_assignments 
-              WHERE programme_id = ? AND is_active = 1`,
-              [programme_id]
-          );
-          */
+        const [pendingClassifications] = await db.promise().query(
+            `SELECT students.id FROM students
+            LEFT JOIN classification_results 
+            ON students.id = classification_results.student_id
+            WHERE students.programme_id = ? 
+            AND classification_results.id IS NULL`,
+            [programme_id]
+        );
+
+        const [pendingReviewClassifications] = await db.promise().query(
+            `SELECT * FROM classification_results 
+            WHERE programme_id = ? 
+            AND confirmed_at IS NULL`,
+            [programme_id]
+        );
 
 
         res.json({
             totalStudents: students.length,
-            totalClassifications: classifications.length,
-
+            totalConfirmedClassifications: confirmedClassifications.length,
+            totalPendingClassifications: pendingClassifications.length,
+            pendingReviewClassifications: pendingReviewClassifications.length
 
         });
     } catch (error) {

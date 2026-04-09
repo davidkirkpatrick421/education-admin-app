@@ -31,11 +31,28 @@
         <div class="col-md-3">
             <div class="card text-bg-success">
                 <div class="card-body">
-                    <h6 class="card-title">Classifications</h6>
-                    <h2 class="card-text"><%= stats.totalClassifications %></h2>
+                    <h6 class="card-title">Confirmed Classifications</h6>
+                    <h2 class="card-text"><%= stats.totalConfirmedClassifications %></h2>
                 </div>
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <h6 class="card-title">Pending Confirmation</h6>
+                    <h2 class="card-text"><%= stats.pendingReviewClassifications %></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-danger">
+                <div class="card-body">
+                    <h6 class="card-title">Pending Classifications</h6>
+                    <h2 class="card-text"><%= stats.totalPendingClassifications %></h2>
+                </div>
+            </div>
+        </div>
+        
     <% } %>
     <% } %>
 
