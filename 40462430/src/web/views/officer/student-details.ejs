@@ -69,29 +69,31 @@
         </tbody>
     </table>
 
-<% if (classification) { %>
+<% if (classification && classification.confirmed_at) { %>
+    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed and cannot be modified">Re-Calculate Classification</button>
+    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed and cannot be modified">Override Classification</button>
+    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed and cannot be modified">Confirm Classification</button>
+    <form action="/officer/students/<%= student.id %>/classify/remove?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Removing will delete classification from database and cannot be undone. Proceed?')">
+        <button type="submit" class="btn btn-sm btn-danger mb-3">Remove Classification</button>
+    </form>
+
+<% } else if (classification) { %>
     <form action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Re-calculating will remove any existing officer override and update classification. Proceed?')">
-        <button type="submit" class="btn btn-sm btn-primary mb-3">Re-Calulate Classification</button>
+        <button type="submit" class="btn btn-sm btn-primary mb-3">Re-Calculate Classification</button>
     </form>
-<% } else { %>
-    <form action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>" method="POST">
-        <button type="submit" class="btn btn-sm btn-primary mb-3">Calculate Classification</button>
-    </form>
-<% } %>
-
-<% if (classification && !classification.override_applied && !classification.confirmed_at) { %>
-    <a href="/officer/students/<%= student.id %>/classify/override?programme=<%= programmeId %>" class="btn btn-sm btn-warning">Override Classification</a>
-<% } %>
-
-<% if (classification && !classification.confirmed_at) { %>
+    <% if (!classification.override_applied) { %>
+        <a href="/officer/students/<%= student.id %>/classify/override?programme=<%= programmeId %>" class="btn btn-sm btn-warning mb-3">Override Classification</a>
+    <% } %>
     <form action="/officer/students/<%= student.id %>/classify/confirm?programme=<%= programmeId %>" method="POST">
         <button type="submit" class="btn btn-sm btn-success mb-3">Confirm Classification</button>
     </form>
-<% } %>
-
-<% if (classification) { %>
-    <form action="/officer/students/<%= student.id %>/classify/remove?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Removing will delete classifcation from database and cannot be undone. Classification must be recalculated. Proceed?')">
+    <form action="/officer/students/<%= student.id %>/classify/remove?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Removing will delete classification from database and cannot be undone. Proceed?')">
         <button type="submit" class="btn btn-sm btn-danger mb-3">Remove Classification</button>
+    </form>
+
+<% } else { %>
+    <form action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>" method="POST">
+        <button type="submit" class="btn btn-sm btn-primary mb-3">Calculate Classification</button>
     </form>
 <% } %>
 
