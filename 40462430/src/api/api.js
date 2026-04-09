@@ -729,11 +729,18 @@ api.post('/officer/students/:id/classify/override', async (req, res) => {
 api.post('/officer/students/:id/classify/remove', async (req, res) => {
     const studentId = req.params.id;
 
-    if (classification.confirmed_at) {
-        return res.status(400).json({ error: 'Cannot remove a confirmed classification' });
-    }
-
     try {
+        const [existingClassification] = await db.promise().query(
+            `SELECT confirmed_at 
+            FROM classification_results 
+            WHERE student_id = ? `,
+            [studentId]
+        );
+
+        if (existingClassification.length === 0) {
+            return res.status(404).json({ error: 'Classification result not found' });
+        }
+
         await db.promise().query(
             `DELETE FROM classification_results WHERE student_id = ? `,
             [studentId]

@@ -118,7 +118,7 @@
         <% } %>
     </table>
 
-    <% if (classification.override_applied) { %>
+    <% if (classification && classification.override_applied) { %>
     <div class="card mb-4">
         <span class="badge bg-warning text-dark">Override Applied</span>
         <div class="card-header">Override Details</div>
