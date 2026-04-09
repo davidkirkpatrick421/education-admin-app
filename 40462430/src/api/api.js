@@ -18,8 +18,7 @@ const db = mysql.createPool({
 });
 
 db.getConnection((err) => {
-    if (err) return console.log(err.message);
-    console.log("Database Connected: Success!");
+    if (err) return console.error('Error connecting to the database:', err.message);
 });
 
 // API endpoint for user login form
@@ -28,6 +27,7 @@ api.post('/login', async (req, res) => {
 
     const loginQuery = `SELECT * FROM users WHERE email = ? AND is_active = 1`;
 
+    try {
     const [rows] = await db.promise().query(loginQuery, [email]);
 
     if (rows.length === 0) {
@@ -61,6 +61,10 @@ api.post('/login', async (req, res) => {
             assignments: user.assignments || []
         }
     });
+    } catch (error) {
+        console.error('Error during login:', error.message);
+        res.status(500).json({ error: 'Error during login' });
+    }
 });
 
 api.get('/admin/stats', async (req, res) => {
@@ -820,7 +824,7 @@ api.post('/officer/students/:id/classify/override', async (req, res) => {
         '1st': 'First Class Honours',
         '2:1': 'Upper Second Class Honours',
         '2:2': 'Lower Second Class Honours',
-        '3': 'Third Class Honours',
+        '3rd': 'Third Class Honours',
         'fail': 'Fail'
     };
 
@@ -876,7 +880,7 @@ api.post('/officer/students/:id/classify/remove', async (req, res) => {
 
         if (existingClassification.length === 0) {
             return res.status(404).json({ error: 'Classification result not found' });
-        }
+        }        
 
         await db.promise().query(
             `DELETE FROM classification_results WHERE student_id = ? `,

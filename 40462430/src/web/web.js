@@ -83,13 +83,13 @@ web.post('/login', async (req, res) => {
         req.session.user = authResult.data.user;
 
         if (authResult.data.user.role === 'admin') {
-            console.log('Admin login successful');
+            
             res.redirect('/admin/dashboard');
         } else if (authResult.data.user.role === 'officer') {
-            console.log('Officer login successful');
+            
             res.redirect('/officer/dashboard');
         } else {
-            console.log('Invalid role login attempt');
+            
             res.status(403).send('Access denied');
         }
     } catch (error) {
@@ -158,7 +158,7 @@ web.post('/admin/officers', isAuthenticated, isAdmin, async (req, res) => {
         };
 
         await axios.post(`${process.env.API_URL}/officers`, req.body);
-        console.log('Officer created successfully');
+        
         res.redirect('/admin/officers');
     } catch (error) {
         console.error('Error creating officer:', error.message);
@@ -182,8 +182,9 @@ web.post('/admin/officers/:id/edit', isAuthenticated, isAdmin, async (req, res) 
     const officerId = req.params.id;
 
     if (!email || !first_name || !surname) {
-        const editResponse = await axios.get(`${process.env.API_URL}/officers/${officerId}/edit`, req.body);
-        return res.render('admin/officers-edit', { officer: editResponse.data.officer, error: 'All fields are required' });
+        return res.render('admin/officers-edit', { 
+            officer: { id: officerId, email, first_name, surname }, 
+            error: 'All fields are required' });
     };
 
     try {
@@ -192,7 +193,7 @@ web.post('/admin/officers/:id/edit', isAuthenticated, isAdmin, async (req, res) 
 
     } catch (error) {
         console.error('Error updating officer:', error.message);
-        res.render('admin/officers-edit', { error: 'Error updating officer' });
+        res.render('admin/officers-edit', { officer: { id: officerId, email, first_name, surname }, error: 'Error updating officer' });
     }
 });
 
@@ -242,7 +243,7 @@ web.post('/admin/programmes', isAuthenticated, isAdmin, async (req, res) => {
 
     try {
         await axios.post(`${process.env.API_URL}/programmes`, req.body);
-        console.log('Programme created successfully');
+        
         res.redirect('/admin/programmes');
     } catch (error) {
         console.error('Error creating programme:', error.message);
@@ -266,8 +267,7 @@ web.post('/admin/programmes/:id/edit', isAuthenticated, isAdmin, async (req, res
     const programmeId = req.params.id;
 
     if (!code || !title || !y2_weight || !y3_weight || !resit_cap_enabled || !resit_cap_mark || !board_deadline) {
-        const editResponse = await axios.get(`${process.env.API_URL}/programmes/${programmeId}/edit`, req.body);
-        return res.render('admin/programmes-edit', { programme: editResponse.data.programme, error: 'All fields are required' });
+        return res.render('admin/programmes-edit', { programme: { id: programmeId, code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline }, error: 'All fields are required' });
     };
 
     try {
@@ -275,7 +275,7 @@ web.post('/admin/programmes/:id/edit', isAuthenticated, isAdmin, async (req, res
         res.redirect('/admin/programmes');
     } catch (error) {
         console.error('Error updating programme:', error.message);
-        res.render('admin/programmes-edit', { error: 'Error updating programme' });
+        res.render('admin/programmes-edit', { programme: { id: programmeId, code, title, y2_weight, y3_weight, resit_cap_enabled, resit_cap_mark, board_deadline }, error: 'Error updating programme' });
     }
 });
 
@@ -319,7 +319,7 @@ web.post('/admin/assignments', isAuthenticated, isAdmin, async (req, res) => {
 
     try {
         await axios.post(`${process.env.API_URL}/assignments`, { officer_id, programme_id, assigned_by: req.session.user.id });
-        console.log('Assignment created successfully');
+       
         res.redirect('/admin/assignments');
     } catch (error) {
         console.error('Error creating assignment:', error.message);
@@ -341,10 +341,10 @@ web.post('/admin/assignments/:id/remove', isAuthenticated, isAdmin, async (req, 
     try {
         await axios.post(`${process.env.API_URL}/assignments/${assignmentId}/remove`);
         res.redirect('/admin/assignments');
-        console.log('Assignment removed successfully');
+        
     } catch (error) {
         console.error('Error removing assignment:', error.message);
-        res.redirect('/admin/assignments', { error: 'Error removing assignment' });
+        res.redirect('/admin/assignments');
     }
 });
 
@@ -353,11 +353,9 @@ web.post('/admin/assignments/:id/remove', isAuthenticated, isAdmin, async (req, 
 // Officer dashboard routes 
 
 web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
-    console.log('Officer assignments:', req.session.user.assignments);
+    
     const assignments = req.session.user.assignments;
 
-    console.log('API URL:', `${process.env.API_URL}/officer/stats/${assignments[0].programme_id}`);
-    console.log('Assignments from session:', assignments);
     if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
         return res.render('officer/dashboard', {
             programme: null,
@@ -366,7 +364,6 @@ web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
     }
 
     const programme = assignments[0];
-    console.log('Programme:', programme);
 
     try {
         const dashboardResult = await axios.get(`${process.env.API_URL}/officer/stats/${programme.programme_id}`);
@@ -448,7 +445,6 @@ web.get('/officer/students/export', isAuthenticated, isOfficer, async (req, res)
         res.setHeader('Content-Type', 'text/csv');
 
         const csvData = lines.join('\n');
-        console.log('Export students:', JSON.stringify(exportResponse.data.students[0]));
         res.send(csvData);
 
     } catch (error) {
@@ -469,8 +465,6 @@ web.get('/officer/students', isAuthenticated, isOfficer, async (req, res) => {
     }
     const assignments = req.session.user.assignments;
     const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
-
-    console.log('Fetching students for programme:', programmeId);
 
     try {
         const isAssigned = req.session.user.assignments.some(
@@ -552,7 +546,6 @@ web.post('/officer/students/new', isAuthenticated, isOfficer, async (req, res) =
         }
 
         await axios.post(`${process.env.API_URL}/officer/students`, req.body);
-        console.log('Student created successfully');
         res.redirect(`/officer/students?programme=${programme_id}`);
     } catch (error) {
         console.error('Error creating student:', error.message);
@@ -609,7 +602,7 @@ web.get('/officer/students/:id/edit', isAuthenticated, isOfficer, async (req, re
     try {
         const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
         const student = studentDetails.data.student;
-        console.log('Student data:', studentDetails.data.student);
+
         const isAssigned = req.session.user.assignments.some(
             a => parseInt(a.programme_id) === parseInt(student.programme_id));
 
@@ -649,7 +642,6 @@ web.post('/officer/students/:id/edit', isAuthenticated, isOfficer, async (req, r
         }
 
         await axios.post(`${process.env.API_URL}/officer/students/${studentId}/edit`, req.body);
-        console.log('Student updated successfully');
         res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
 
     } catch (error) {
@@ -691,7 +683,6 @@ web.post('/officer/students/:id/delete', isAuthenticated, isOfficer, async (req,
         }
 
         await axios.post(`${process.env.API_URL}/officer/students/${studentId}/delete`);
-        console.log('Student deleted successfully');
         res.redirect(`/officer/students?programme=${programmeId}`);
     } catch (error) {
         console.error('Error deleting student:', error.message);
@@ -733,6 +724,9 @@ web.post('/officer/students/:id/modules', isAuthenticated, isOfficer, async (req
     const studentId = req.params.id;
     const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
 
+    const { module_code, module_name, year_of_study, credits, mark } = req.body;
+
+
     let studentDetails;
     try {
         studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
@@ -746,8 +740,23 @@ web.post('/officer/students/:id/modules', isAuthenticated, isOfficer, async (req
             return res.redirect('/officer/dashboard');
         }
 
+        if (!module_code || !module_name || !year_of_study || !credits || !mark) {
+            return res.render('officer/modules-new', {
+                student: { id: studentId },
+                programmeId,
+                error: 'All fields are required'
+            });
+        };
+
+        if (mark < 0 || mark > 100) {
+            return res.render('officer/modules-new', {
+                student: { id: studentId },
+                programmeId,
+                error: 'Mark must be between 0 and 100'
+            });
+        };
+
         await axios.post(`${process.env.API_URL}/officer/students/${studentId}/modules`, req.body);
-        console.log('Module added successfully');
         res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
     } catch (error) {
         console.error('Error adding module:', error.message);
@@ -819,7 +828,6 @@ web.post('/officer/students/:id/modules/:moduleId/edit', isAuthenticated, isOffi
         }
 
         await axios.post(`${process.env.API_URL}/officer/students/${studentId}/modules/${moduleId}/edit`, req.body);
-        console.log('Module updated successfully');
         res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
     } catch (error) {
         console.error('Error updating module:', error.message);
@@ -856,12 +864,11 @@ web.post('/officer/students/:id/classify', isAuthenticated, isOfficer, async (re
             a => parseInt(a.programme_id) === parseInt(student.programme_id));
 
         if (!isAssigned) {
-            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to add module for student ${studentId}`);
+            console.warn(`Unauthorized access attempt by user ${req.session.user.id} to programme ${programmeId}`);
             return res.redirect('/officer/dashboard');
         }
 
-        const classificationResult = await axios.post(`${process.env.API_URL}/officer/students/${studentId}/classify`, { programme_id: programmeId });
-        console.log('Classification calculated successfully');
+        await axios.post(`${process.env.API_URL}/officer/students/${studentId}/classify`, { programme_id: programmeId });
         res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
     } catch (error) {
         console.error('Error calculating classification:', error.message);
@@ -895,7 +902,7 @@ web.post('/officer/students/:id/classify/override', isAuthenticated, isOfficer, 
             override_rationale,
             override_by: req.session.user.id
         });
-        console.log('Classification overridden successfully');
+
         res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
     } catch (error) {
         console.error('Error overriding classification:', error.message);
@@ -972,7 +979,7 @@ web.post('/officer/students/:id/classify/confirm', isAuthenticated, isOfficer, a
         await axios.post(`${process.env.API_URL}/officer/students/${studentId}/classify/confirm`, {
             confirmed_by: req.session.user.id
         });
-        console.log('Classification confirmed successfully');
+        
         res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
     } catch (error) {
         console.error('Error confirming classification:', error.message);
@@ -1006,7 +1013,7 @@ web.post('/officer/students/:id/classify/remove', isAuthenticated, isOfficer, as
         }
 
         await axios.post(`${process.env.API_URL}/officer/students/${studentId}/classify/remove`);
-        console.log('Classification removed successfully');
+        
         res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
     } catch (error) {
         console.error('Error removing classification:', error.message);
@@ -1019,7 +1026,6 @@ web.post('/officer/students/:id/classify/remove', isAuthenticated, isOfficer, as
 
 web.get('/logout', (req, res) => {
     req.session.destroy();
-    console.log('User logged out successfully');
     res.redirect('/login');
 
 });
