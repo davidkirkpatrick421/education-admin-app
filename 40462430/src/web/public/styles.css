@@ -1,0 +1,40 @@
+.body {
+    background-color: rgb(39, 41, 109);
+}
+
+.img-BG {
+    background-image: url('/assets/universityBG.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: rgb(39, 41, 109);
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    min-width: 320px;
+}
+
+.img-BG-overlay {
+    background-color: rgba(39, 41, 109, 0.326);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2em 1em;
+    min-height: 100vh;
+}
+
+.loginContainer {
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0 4px 8px rgba(41, 41, 41, 0.351);
+    margin: 0 auto;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 8px;
+    padding: 2em;
+
+}
+
+#loginHead {
+    color: rgb(39, 41, 109);
+    text-align: center;
+    
+}
