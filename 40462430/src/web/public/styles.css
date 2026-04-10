@@ -30,11 +30,28 @@
     max-width: 400px;
     border-radius: 8px;
     padding: 2em;
+}
 
+.navbar {
+    background-color: rgb(39, 41, 109) !important;;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 8px rgba(41, 41, 41, 0.351);
+}
+
+.navbar .navbar-brand {
+    color: rgb(255, 255, 255) !important;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar .nav-link {
+    color: rgb(255, 255, 255) !important;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
 }
 
 #loginHead {
     color: rgb(39, 41, 109);
     text-align: center;
-    
+
 }
