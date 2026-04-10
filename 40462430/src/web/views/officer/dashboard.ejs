@@ -1,133 +1,143 @@
-<%- include('../partials/head', {title: 'Officer Dashboard'}) %>
-<%- include('../partials/nav') %>
+<%- include('../partials/head', {title: 'Officer Dashboard' }) %>
+    <%- include('../partials/nav') %>
 
-<div class="img-BG">
-    <div class="img-BG-overlay">
-
-    <div class="container py-4">
-
-    <% if (error) { %>
-        <div class="alert alert-warning"><%= error %></div>
-    <% } %>
-
-    <% if (programme) { %>
-
-   
-    <h1 class="mb-4">Dashboard - <%= programme.title %></h1>
-
-    
-<% if (stats) { %>
-    <div class="col-md-3">
-            <div class="card text-bg-primary">
-                <div class="card-body">
-                    <h6 class="card-title">Students</h6>
-                    <h2 class="card-text"><%= stats.totalStudents %></h2>
-                </div>
+        <% if (error) { %>
+            <div class="alert alert-warning">
+                <%= error %>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-bg-success">
-                <div class="card-body">
-                    <h6 class="card-title">Confirmed Classifications</h6>
-                    <h2 class="card-text"><%= stats.totalConfirmedClassifications %></h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-bg-warning">
-                <div class="card-body">
-                    <h6 class="card-title">Pending Confirmation</h6>
-                    <h2 class="card-text"><%= stats.pendingReviewClassifications %></h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-bg-danger">
-                <div class="card-body">
-                    <h6 class="card-title">Pending Classifications</h6>
-                    <h2 class="card-text"><%= stats.totalPendingClassifications %></h2>
-                </div>
-            </div>
-        </div>
-        
-    <% } %>
-    <% } %>
+            <% } %>
+
+                <div class="img-BG">
+                    <div class="img-BG-overlay">
+
+                        <div class="container dash-content ">
+
+                            <% if (programme) { %>
 
 
-    <div class="row mt-4">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-body">
-                    <div class="card-header">Classification Distribution</div>
-                    <div class="card-body">
-                        <p>This chart shows the distribution of classifications for students in this programme. It provides a visual overview of how many students fall into each classification category.</p>
-                        <canvas id="classificationChart"></canvas>
+                                <h3 class="dash-title">Dashboard - <%= programme.title %>
+                                </h3>
+
+                                <div class="row">
+                                    <% if (stats) { %>
+
+                                        <div class="col-12 col-lg-6 dash-stats">
+                                            <div class="col-6 stats-col">
+                                                <div class="card stats-card">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title">Students</h6>
+                                                        <h2 class="card-text">
+                                                            <%= stats.totalStudents %>
+                                                        </h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 stats-col">
+                                                <div class="card stats-card">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title">Confirmed Classifications</h6>
+                                                        <h2 class="card-text">
+                                                            <%= stats.totalConfirmedClassifications %>
+                                                        </h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 stats-col">
+                                                <div class="card stats-card">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title">Pending Confirmation</h6>
+                                                        <h2 class="card-text">
+                                                            <%= stats.pendingReviewClassifications %>
+                                                        </h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 stats-col">
+                                                <div class="card stats-card">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title">Pending Classifications</h6>
+                                                        <h2 class="card-text">
+                                                            <%= stats.totalPendingClassifications %>
+                                                        </h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% } %>
+                                            <div class="col-12 col-lg-6 dash-chart">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="card-title">Classification Distribution</div>
+                                                        <div class="card-text">
+                                                            <p>This chart shows the distribution of classifications
+                                                                for students in this programme.</p>
+                                                            <canvas id="classificationChart"></canvas>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <% } %>
+                                </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    </div>
-</div>   
-</div>   
-        
-    
-    
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const distributionData = <%- JSON.stringify([
-        stats.distribution['1st'],
-        stats.distribution['2:1'],
-        stats.distribution['2:2'],
-        stats.distribution['3rd'],
-        stats.distribution['fail'],
-        stats.distribution['ineligible']
-    ]); %>;
 
-    const ctx = document.getElementById('classificationChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['1st', '2:1', '2:2', '3rd', 'Fail', 'Ineligible'],
-            datasets: [{
-                label: 'Students',
-                data: distributionData,
-                backgroundColor: [
-                    '#198754',
-                    '#0d6efd',
-                    '#0dcaf0',
-                    '#ffc107',
-                    '#dc3545',
-                    '#6c757d'
-                ]
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            layout: {
-                
-            },
-            barThickness: 50,
-            responsive: true,
-            aspectRatio: 2,
-            plugins: {
-                legend: { display: true,
-                    labels: {
-                        color: '#000',
-                        font: {
-                            size: '12%',
-                            weight: 'bold'
+
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    const distributionData = <%- JSON.stringify([
+                        stats.distribution['1st'],
+                        stats.distribution['2:1'],
+                        stats.distribution['2:2'],
+                        stats.distribution['3rd'],
+                        stats.distribution['fail'],
+                        stats.distribution['ineligible']
+                    ]); %>;
+
+                    const ctx = document.getElementById('classificationChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['1st', '2:1', '2:2', '3rd', 'Fail', 'Ineligible'],
+                            datasets: [{
+                                label: 'Students',
+                                data: distributionData,
+                                backgroundColor: [
+                                    '#bfa5a3',
+                                    'rgb(39, 41, 109)',
+                                    '#787586',
+                                    '#484554',
+                                    '#ada9bb',
+                                    '#484554'
+                                ]
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            layout: {
+
+                            },
+                            responsive: true,
+                            aspectRatio: 2,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    labels: {
+                                        color: 'rgb(39, 41, 109)',
+                                        font: {
+                                            size: '12%',
+                                            weight: 'bold'
+                                        }
+                                    }
+                                },
+                                title: { display: true, text: 'Student Classification Distribution', color: 'rgb(0,0,0)' }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                            }
                         }
-                    }
-                },
-                title: { display: true, text: 'Student Classification Distribution', color: '#' }
-            },
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
-            }
-        }
-    });
-</script>
+                    });
+                </script>
 
-<%- include('../partials/footer') %>
+                <%- include('../partials/footer') %>
