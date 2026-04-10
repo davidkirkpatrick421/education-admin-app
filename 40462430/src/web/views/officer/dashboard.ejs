@@ -3,24 +3,19 @@
 
 <div class="img-BG">
     <div class="img-BG-overlay">
+
+    <div class="container py-4">
+
     <% if (error) { %>
         <div class="alert alert-warning"><%= error %></div>
     <% } %>
 
     <% if (programme) { %>
 
-    <div>
-        <p>Welcome, <%= user.first_name %>
-                <%= user.surname %>!</p>
-        <p>Your role: <%= user.role %>
-        </p>
-    </div>
+   
+    <h1 class="mb-4">Dashboard - <%= programme.title %></h1>
 
-    <div>
-
-        <p>Officer - Dashboard.</p>
-
-    </div>
+    
 <% if (stats) { %>
     <div class="col-md-3">
             <div class="card text-bg-primary">
@@ -74,7 +69,8 @@
     </div>
 
     </div>
-</div>      
+</div>   
+</div>   
         
     
     

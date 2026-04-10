@@ -1,58 +1,87 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    
-        <a class="navbar-brand" href="/dashboard">HEdClass</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
+    <a class="navbar-brand" href="/dashboard">HEdClass</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-                <% if (user.role === 'admin') { %>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+
+            <% if (user.role==='admin' ) { %>
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/officers" class="nav-link text-light">Officers</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/programmes" class="nav-link text-light">Programmes</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/assignments" class="nav-link text-light">Assignments</a>
+                </li>
+                <% } else { %>
                     <li class="nav-item">
-                        <a href="/admin/dashboard" class="nav-link">Dashboard</a>
-                    </li>
+                        <a href="/officer/dashboard" class="nav-link text-light">Dashboard</a>
                     <li class="nav-item">
-                        <a href="/admin/officers" class="nav-link text-light">Officers</a>
+                        <a href="/officer/students" class="nav-link text-light">Students</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/admin/programmes" class="nav-link text-light">Programmes</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/admin/assignments" class="nav-link text-light">Assignments</a>
-                    </li>
-                    <% } else { %>
-                        <li class="nav-item">
-                            <a href="/officer/dashboard" class="nav-link text-light">Dashboard</a>
-                        <li class="nav-item">
-                            <a href="/officer/students" class="nav-link text-light">Students</a>
-                        </li>
-                        <% } %>
+                    <% } %>
 
-                            
+                        <% if (user.role==='officer' && user.assignments.length> 1) { %>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <% const active=user.assignments.find(a=> a.programme_id == activeProgrammeId); %>
+                                        <%= active ? active.title : 'Select Programme' %>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <% user.assignments.forEach(a=> { %>
+                                        <li>
+                                            <form action="/officer/select-programme" method="POST" class="d-inline">
+                                                <input type="hidden" name="programme_id" value="<%= a.programme_id %>">
+                                                <button type="submit"
+                                                    class="dropdown-item <%= a.programme_id == activeProgrammeId ? 'active' : '' %>">
+                                                    <%= a.title %>
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <% }) %>
+                                </ul>
+                            </li>
+                            <% } else if (user.role==='officer' ) { %>
+                                <li class="nav-item">
+                                    <span class="navbar-text text-light small">
+                                        <%= user.assignments[0]?.title %>
+                                    </span>
+                                </li>
+                                <% } %>
 
-            </ul>
 
-            <ul class="navbar-nav ms-auto align-items-center gap-3">
-               <% if (user.role === 'admin') { %>
+
+        </ul>
+
+        <ul class="navbar-nav ms-auto align-items-center gap-3">
+            <% if (user.role==='admin' ) { %>
                 <li class="nav-item">
                     <span class="navbar-text text-light">
                         Logged in as: Registry Administrator
                     </span>
                 </li>
                 <% } else { %>
-                <li class="nav-item">
-                    <span class="navbar-text text-light">
-                        Logged in as: <%= user.first_name %> <%= user.surname %>
-                    </span>
-                </li>
-                <% } %>
-                
-                <li class="nav-item">
-                    <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
-                </li>
-            </ul>
-        </div>
-    
+                    <li class="nav-item">
+                        <span class="navbar-text text-light">
+                            Logged in as: <%= user.first_name %>
+                                <%= user.surname %>
+                        </span>
+                    </li>
+                    <% } %>
+
+                        <li class="nav-item">
+                            <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+                        </li>
+        </ul>
+    </div>
+
 </nav>

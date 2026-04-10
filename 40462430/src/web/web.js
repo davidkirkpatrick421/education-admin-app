@@ -33,6 +33,14 @@ web.use(express.urlencoded({ extended: true }));
 
 web.use((req, res, next) => {
     res.locals.user = req.session.user || null;
+
+    if (req.session.user && req.session.user.role === 'officer') {
+        if (!req.session.activeProgrammeId && req.session.user.assignments.length > 0) {
+            req.session.activeProgrammeId = req.session.user.assignments[0].programme_id;
+        }
+        res.locals.activeProgrammeId = req.session.activeProgrammeId;
+    }
+
     next();
 });
 
@@ -83,13 +91,13 @@ web.post('/login', async (req, res) => {
         req.session.user = authResult.data.user;
 
         if (authResult.data.user.role === 'admin') {
-            
+
             res.redirect('/admin/dashboard');
         } else if (authResult.data.user.role === 'officer') {
-            
+
             res.redirect('/officer/dashboard');
         } else {
-            
+
             res.status(403).send('Access denied');
         }
     } catch (error) {
@@ -158,7 +166,7 @@ web.post('/admin/officers', isAuthenticated, isAdmin, async (req, res) => {
         };
 
         await axios.post(`${process.env.API_URL}/officers`, req.body);
-        
+
         res.redirect('/admin/officers');
     } catch (error) {
         console.error('Error creating officer:', error.message);
@@ -182,9 +190,10 @@ web.post('/admin/officers/:id/edit', isAuthenticated, isAdmin, async (req, res) 
     const officerId = req.params.id;
 
     if (!email || !first_name || !surname) {
-        return res.render('admin/officers-edit', { 
-            officer: { id: officerId, email, first_name, surname }, 
-            error: 'All fields are required' });
+        return res.render('admin/officers-edit', {
+            officer: { id: officerId, email, first_name, surname },
+            error: 'All fields are required'
+        });
     };
 
     try {
@@ -243,7 +252,7 @@ web.post('/admin/programmes', isAuthenticated, isAdmin, async (req, res) => {
 
     try {
         await axios.post(`${process.env.API_URL}/programmes`, req.body);
-        
+
         res.redirect('/admin/programmes');
     } catch (error) {
         console.error('Error creating programme:', error.message);
@@ -319,7 +328,7 @@ web.post('/admin/assignments', isAuthenticated, isAdmin, async (req, res) => {
 
     try {
         await axios.post(`${process.env.API_URL}/assignments`, { officer_id, programme_id, assigned_by: req.session.user.id });
-       
+
         res.redirect('/admin/assignments');
     } catch (error) {
         console.error('Error creating assignment:', error.message);
@@ -341,7 +350,7 @@ web.post('/admin/assignments/:id/remove', isAuthenticated, isAdmin, async (req, 
     try {
         await axios.post(`${process.env.API_URL}/assignments/${assignmentId}/remove`);
         res.redirect('/admin/assignments');
-        
+
     } catch (error) {
         console.error('Error removing assignment:', error.message);
         res.redirect('/admin/assignments');
@@ -353,7 +362,7 @@ web.post('/admin/assignments/:id/remove', isAuthenticated, isAdmin, async (req, 
 // Officer dashboard routes 
 
 web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
-    
+
     const assignments = req.session.user.assignments;
 
     if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
@@ -363,7 +372,8 @@ web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
         });
     }
 
-    const programme = assignments[0];
+    const programmeId = req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
+    const programme = assignments.find(a => a.programme_id === programmeId) || assignments[0];
 
     try {
         const dashboardResult = await axios.get(`${process.env.API_URL}/officer/stats/${programme.programme_id}`);
@@ -384,6 +394,18 @@ web.get('/officer/dashboard', isAuthenticated, isOfficer, async (req, res) => {
 
 });
 
+web.post('/officer/select-programme', isAuthenticated, isOfficer, (req, res) => {
+    const { programme_id } = req.body;
+    const isAssigned = req.session.user.assignments.some(
+        a => parseInt(a.programme_id) === parseInt(programme_id)
+    );
+    if (!isAssigned) {
+        return res.redirect('/officer/dashboard');
+    }
+    req.session.activeProgrammeId = parseInt(programme_id);
+    res.redirect('/officer/dashboard');
+});
+
 web.get('/officer/students/export', isAuthenticated, isOfficer, async (req, res) => {
 
     if (!req.session.user.assignments || req.session.user.assignments.length === 0) {
@@ -395,7 +417,7 @@ web.get('/officer/students/export', isAuthenticated, isOfficer, async (req, res)
         });
     }
     const assignments = req.session.user.assignments;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     try {
         const isAssigned = req.session.user.assignments.some(
@@ -464,7 +486,7 @@ web.get('/officer/students', isAuthenticated, isOfficer, async (req, res) => {
         });
     }
     const assignments = req.session.user.assignments;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     try {
         const isAssigned = req.session.user.assignments.some(
@@ -500,7 +522,7 @@ web.get('/officer/students/new', isAuthenticated, isOfficer, async (req, res) =>
         });
     }
 
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     try {
         const isAssigned = req.session.user.assignments.some(
@@ -526,7 +548,7 @@ web.get('/officer/students/new', isAuthenticated, isOfficer, async (req, res) =>
 });
 
 web.post('/officer/students/new', isAuthenticated, isOfficer, async (req, res) => {
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
     const { student_number, first_name, surname, academic_year, has_mc, mc_notes, programme_id } = req.body;
 
     if (!student_number || !first_name || !surname || !academic_year || !programme_id) {
@@ -562,7 +584,7 @@ web.post('/officer/students/new', isAuthenticated, isOfficer, async (req, res) =
 
 web.get('/officer/students/:id', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     try {
         const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
@@ -597,7 +619,7 @@ web.get('/officer/students/:id', isAuthenticated, isOfficer, async (req, res) =>
 
 web.get('/officer/students/:id/edit', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     try {
         const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
@@ -628,7 +650,7 @@ web.get('/officer/students/:id/edit', isAuthenticated, isOfficer, async (req, re
 
 web.post('/officer/students/:id/edit', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
     try {
         const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
         const student = studentDetails.data.student;
@@ -668,7 +690,7 @@ web.post('/officer/students/:id/edit', isAuthenticated, isOfficer, async (req, r
 
 web.post('/officer/students/:id/delete', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     try {
         const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
@@ -692,7 +714,7 @@ web.post('/officer/students/:id/delete', isAuthenticated, isOfficer, async (req,
 
 web.get('/officer/students/:id/modules/new', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
     try {
         const studentDetails = await axios.get(`${process.env.API_URL}/officer/students/${studentId}`);
         const student = studentDetails.data.student;
@@ -722,7 +744,7 @@ web.get('/officer/students/:id/modules/new', isAuthenticated, isOfficer, async (
 
 web.post('/officer/students/:id/modules', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     const { module_code, module_name, year_of_study, credits, mark } = req.body;
 
@@ -775,7 +797,7 @@ web.post('/officer/students/:id/modules', isAuthenticated, isOfficer, async (req
 web.get('/officer/students/:id/modules/:moduleId/edit', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
     const moduleId = req.params.moduleId;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     let studentDetails;
     try {
@@ -812,7 +834,7 @@ web.get('/officer/students/:id/modules/:moduleId/edit', isAuthenticated, isOffic
 web.post('/officer/students/:id/modules/:moduleId/edit', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
     const moduleId = req.params.moduleId;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     let studentDetails;
     try {
@@ -853,7 +875,7 @@ web.post('/officer/students/:id/modules/:moduleId/edit', isAuthenticated, isOffi
 
 web.post('/officer/students/:id/classify', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     let studentDetails;
     try {
@@ -878,7 +900,7 @@ web.post('/officer/students/:id/classify', isAuthenticated, isOfficer, async (re
 
 web.post('/officer/students/:id/classify/override', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
     const { classification_code, classification_label, override_rationale } = req.body;
 
     if (!override_rationale) {
@@ -916,7 +938,7 @@ web.post('/officer/students/:id/classify/override', isAuthenticated, isOfficer, 
 
 web.get('/officer/students/:id/classify/override', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     let studentDetails;
     try {
@@ -955,7 +977,7 @@ web.get('/officer/students/:id/classify/override', isAuthenticated, isOfficer, a
 
 web.post('/officer/students/:id/classify/confirm', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
     const { confirmed_by } = req.body;
 
     let studentDetails;
@@ -979,7 +1001,7 @@ web.post('/officer/students/:id/classify/confirm', isAuthenticated, isOfficer, a
         await axios.post(`${process.env.API_URL}/officer/students/${studentId}/classify/confirm`, {
             confirmed_by: req.session.user.id
         });
-        
+
         res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
     } catch (error) {
         console.error('Error confirming classification:', error.message);
@@ -992,7 +1014,7 @@ web.post('/officer/students/:id/classify/confirm', isAuthenticated, isOfficer, a
 
 web.post('/officer/students/:id/classify/remove', isAuthenticated, isOfficer, async (req, res) => {
     const studentId = req.params.id;
-    const programmeId = req.query.programme || req.session.user.assignments[0].programme_id;
+    const programmeId = req.query.programme || req.session.activeProgrammeId || req.session.user.assignments[0].programme_id;
 
     let studentDetails;
     try {
@@ -1013,7 +1035,7 @@ web.post('/officer/students/:id/classify/remove', isAuthenticated, isOfficer, as
         }
 
         await axios.post(`${process.env.API_URL}/officer/students/${studentId}/classify/remove`);
-        
+
         res.redirect(`/officer/students/${studentId}?programme=${programmeId}`);
     } catch (error) {
         console.error('Error removing classification:', error.message);
