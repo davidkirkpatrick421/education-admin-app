@@ -32,10 +32,13 @@
 
                         <% if (user.role==='officer' && user.assignments.length> 1) { %>
                             <li class="nav-item dropdown">
+                                
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    Current Programme:
                                     <% const active=user.assignments.find(a=> a.programme_id == activeProgrammeId); %>
                                         <%= active ? active.title : 'Select Programme' %>
                                 </a>
+                                
                                 <ul class="dropdown-menu">
                                     <% user.assignments.forEach(a=> { %>
                                         <li>
