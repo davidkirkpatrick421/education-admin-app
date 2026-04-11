@@ -9,7 +9,8 @@ const PORT = process.env.WEB_PORT;
 
 web.use(session({
     secret: process.env.SESSION_SECRET,
-    resave: false,
+    resave: true,
+    rolling: true,
     saveUninitialized: false,
     cookie: {
         secure: false, // HTTP 
