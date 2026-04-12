@@ -754,7 +754,7 @@ api.post('/officer/students/:id/classify', async (req, res) => {
             rationale_log = VALUES(rationale_log),
             calculated_at = NOW(),
             override_applied = 0,
-            override_classification = NULL,
+            
             override_rationale = NULL,
             override_by = NULL,
             override_at = NULL,
