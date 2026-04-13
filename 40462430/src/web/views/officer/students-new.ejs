@@ -1,42 +1,53 @@
-<%- include('../partials/head', {title: 'Add New Student'}) %>
-<%- include('../partials/nav') %>
+<%- include('../partials/head', {title: 'Add New Student' }) %>
+    <%- include('../partials/nav') %>
 
-    <h2 class="mb-4">Add New Student</h2>
 
-    <% if (error) { %>
-        <div class="alert alert-danger"><%= error %></div>
-    <% } %>
 
-    <form action="/officer/students/new" method="POST">
-        <input type="hidden" name="programme_id" value="<%= programmeId %>">
-        <div class="mb-3">
-            <label class="form-label">Student Number</label>
-            <input type="text" name="student_number" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">First Name</label>
-            <input type="text" name="first_name" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Surname</label>
-            <input type="text" name="surname" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Academic Year</label>
-            <input type="number" name="academic_year" class="form-control" required>
-        </div>
-        <div class="mb-3 form-check">
-            <input type="checkbox" name="has_mc" class="form-check-input" id="hasMCCheck">
-            <label class="form-check-label" for="hasMCCheck">Mitigating Circumstances</label>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">MC Notes (optional)</label>
-            <input type="text" name="mc_notes" class="form-control">
-        </div>
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Add Student</button>
-            <a href="/officer/students?programme=<%= programmeId %>" class="btn btn-outline-secondary">Cancel</a>
-        </div>
-    </form>
+        <% if (error) { %>
+            <div class="alert alert-danger">
+                <%= error %>
+            </div>
+            <% } %>
 
-<%- include('../partials/footer') %>
+                <div class="container-fluid mt-4 px-4 form-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a href="/officer/students?programme=<%= programmeId %>" class="btn btn-secondary">Back to
+                            Student List</a>
+                        <h2 class="mb-4">Add New Student</h2>
+                    </div>
+                    <div class="form-container">
+                        <form action="/officer/students/new" method="POST">
+                            <input type="hidden" name="programme_id" value="<%= programmeId %>">
+                            <div class="mb-3">
+                                <label class="form-label">Student Number</label>
+                                <input type="text" name="student_number" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" name="first_name" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Surname</label>
+                                <input type="text" name="surname" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Academic Year</label>
+                                <input type="number" name="academic_year" class="form-control" required>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" name="has_mc" class="form-check-input" id="hasMCCheck">
+                                <label class="form-check-label" for="hasMCCheck">Mitigating Circumstances</label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">MC Notes (optional)</label>
+                                <input type="text" name="mc_notes" class="form-control">
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">Add Student</button>
+                                <a href="/officer/students?programme=<%= programmeId %>"
+                                    class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <%- include('../partials/footer') %>
