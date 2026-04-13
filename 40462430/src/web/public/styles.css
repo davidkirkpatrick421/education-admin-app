@@ -143,9 +143,7 @@ body::before {
     
 }
 
-* {
-    outline: orangered 1px solid;
-}
+
 .programme-content h1, .officer-list h1, .admin-programmes h1, .assignments h1 {
     color: rgb(254, 254, 254);
     text-align: center;
