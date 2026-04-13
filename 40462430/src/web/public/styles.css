@@ -72,7 +72,10 @@ body::before {
 #loginHead {
     color: rgb(39, 41, 109);
     text-align: center;
+}
 
+.admin-stats {
+    margin: 0 auto;
 }
 
 .dash-content {
@@ -143,7 +146,7 @@ body::before {
 * {
     outline: orangered 1px solid;
 }
-.programme-content h1 {
+.programme-content h1, .officer-list h1, .admin-programmes h1, .assignments h1 {
     color: rgb(254, 254, 254);
     text-align: center;
     margin-bottom: 1em;
@@ -157,7 +160,7 @@ body::before {
 
 }
 
-.studentTable, .module-results {
+.studentTable, .module-results, .officerTable, .admin-programmes-table, .assignments-table {
     --bs-table-bg: rgba(31, 41, 109, 0.651);
     --bs-table-color: #fff;
     --bs-table-border-color: rgba(255, 255, 255, 0.425);
@@ -165,7 +168,7 @@ body::before {
     --bs-table-hover-color: #fff;
 }
 
-.studentTable, .module-results thead {
+.studentTable, .module-results, .officerTable thead, .admin-programmes-table thead, .assignments-table thead {
     background-color: rgba(255, 255, 255, 0.799);
 }
 

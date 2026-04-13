@@ -1,50 +1,67 @@
 <%- include('../partials/head', { title: 'Edit Officer' }) %>
     <%- include('../partials/nav') %>
 
-        <h2 class="mb-4">Edit Officer</h2>
-
         <% if (error) { %>
             <div class="alert alert-danger">
                 <%= error %>
             </div>
             <% } %>
 
-                <form action="/admin/officers/<%= officer.id %>/edit" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">First Name</label>
-                        <input type="text" name="first_name" class="form-control" value="<%= officer.first_name %>"
-                            required>
+                <div class="container-fluid mt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a href="/admin/officers" class="btn btn-secondary">Back to Officer List</a>
+                        <h2 class="mb-0">Edit Officer - <%= officer.first_name %>
+                                <%= officer.surname %>
+                        </h2>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Surname</label>
-                        <input type="text" name="surname" class="form-control" value="<%= officer.surname %>" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-control" value="<%= officer.email %>" required>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                        <a href="/admin/officers" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
 
-                <% if (officer.is_active) { %>
-                    <form action="/admin/officers/<%= officer.id %>/deactivate" method="POST">
-                        <button type="submit" class="btn btn-danger"
-                            onclick="return confirm('Are you sure you want to deactivate this officer?')">
-                            Deactivate Officer
-                        </button>
-                    </form>
-                    <% } else { %>
-                        <form action="/admin/officers/<%= officer.id %>/reactivate" method="POST">
-                            <button type="submit" class="btn btn-success"
-                                onclick="return confirm('Are you sure you want to reactivate this officer?')">
-                                Reactivate Officer
-                            </button>
+                    <div class="form-container">
+
+                        <form action="/admin/officers/<%= officer.id %>/edit" method="POST" id="editOfficerForm">
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" name="first_name" class="form-control"
+                                    value="<%= officer.first_name %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Surname</label>
+                                <input type="text" name="surname" class="form-control" value="<%= officer.surname %>"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control" value="<%= officer.email %>"
+                                    required>
+                            </div>
+
                         </form>
-                        <% } %>
+
+                        <div class="d-flex gap-2 align-items-center mt-3">
+                            <button type="submit" form="editOfficerForm" class="btn btn-primary">Save Changes</button>
+                            <a href="/admin/officers" class="btn btn-secondary">Cancel</a>
+
+                            <% if (officer.is_active) { %>
+                                <form action="/admin/officers/<%= officer.id %>/deactivate" method="POST"
+                                    style="margin:0">
+                                    <button type="submit" class="btn btn-danger"
+                                        onclick="return confirm('Deactivate this officer?')">
+                                        Deactivate Officer
+                                    </button>
+                                </form>
+                                <% } else { %>
+                                    <form action="/admin/officers/<%= officer.id %>/reactivate" method="POST"
+                                        style="margin:0">
+                                        <button type="submit" class="btn btn-success"
+                                            onclick="return confirm('Reactivate this officer?')">
+                                            Reactivate Officer
+                                        </button>
+                                    </form>
+                                    <% } %>
+                        </div>
+
+                    </div>
+                </div>
 
 
 
-                            <%- include('../partials/footer') %>
+                <%- include('../partials/footer') %>

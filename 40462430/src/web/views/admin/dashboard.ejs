@@ -1,56 +1,60 @@
 <%- include('../partials/head', {title: 'Admin Dashboard' }) %>
     <%- include('../partials/nav') %>
 
-        
 
-        <div>
-            <p>Welcome, <%= user.first_name %>
-                    <%= user.surname %>!</p>
-            <p>Your role: <%= user.role %>
-            </p>
-        </div>
-
-        <div>
-
-            <p>Admin Registry - Dashboard</p>
-
-        </div>
+        <div class="container-fluid mt-4 px-4 dash-content">
 
 
 
-        <div class="col-md-3">
-            <div class="card text-bg-primary">
-                <div class="card-body">
-                    <h6 class="card-title">Programmes</h6>
-                    <h2 class="card-text"><%= stats.totalProgrammes %></h2>
+            <h3 class="dash-title">Admin Dashboard</h3>
+
+            <div class="row">
+
+
+                <div class="col-10 dash-stats admin-stats">
+
+                    <div class=" col-12 stats-col">
+                        <div class="card stats-card">
+                            <div class="card-body">
+                                <h6 class="card-title">Programmes</h6>
+                                <h2 class="card-text">
+                                    <%= stats.totalProgrammes %>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 stats-col">
+                        <div class="card stats-card">
+                            <div class="card-body">
+                                <h6 class="card-title">Active Officers</h6>
+                                <h2 class="card-text">
+                                    <%= stats.totalOfficers %>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 stats-col">
+                        <div class="card stats-card">
+                            <div class="card-body">
+                                <h6 class="card-title">Total Students</h6>
+                                <h2 class="card-text">
+                                    <%= stats.totalStudents %>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 stats-col">
+                        <div class="card stats-card">
+                            <div class="card-body">
+                                <h6 class="card-title">Total Assignments</h6>
+                                <h2 class="card-text">
+                                    <%= stats.activeAssignments %>
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-bg-success">
-                <div class="card-body">
-                    <h6 class="card-title">Active Officers</h6>
-                    <h2 class="card-text"><%= stats.totalOfficers %></h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-bg-info">
-                <div class="card-body">
-                    <h6 class="card-title">Total Students</h6>
-                    <h2 class="card-text"><%= stats.totalStudents %></h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-bg-info">
-                <div class="card-body">
-                    <h6 class="card-title">Total Assignments</h6>
-                    <h2 class="card-text"><%= stats.activeAssignments %></h2>
-                </div>
-            </div>
-        </div>
-
-
-
         <%- include('../partials/footer') %>

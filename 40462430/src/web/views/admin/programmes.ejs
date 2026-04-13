@@ -1,52 +1,65 @@
 <%- include('../partials/head', { title: 'Programmes' }) %>
     <%- include('../partials/nav') %>
-        <h2>Degree Programmes</h2>
-        <a href="/admin/programmes-new" class="btn btn-primary">Add Programme</a>
 
-        <table class="table table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Code</th>
-                    <th>Title</th>
-                    <th>Y2 Weight</th>
-                    <th>Y3 Weight</th>
-                    <th>Resit Cap</th>
-                    <th>Board Deadline</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% programmes.forEach(programme=> { %>
-                    <tr>
-                        <td><code><%= programme.code %></code></td>
-                        <td>
-                            <%= programme.title %>
-                        </td>
-                        <td>
-                            <%= (programme.y2_weight * 100).toFixed(0) %>%
-                        </td>
-                        <td>
-                            <%= (programme.y3_weight * 100).toFixed(0) %>%
-                        </td>
-                        <td>
-                            <% if (programme.resit_cap_enabled) { %>
-                                <span class="badge bg-warning text-dark">
-                                    Capped @ <%= programme.resit_cap_mark %>
-                                </span>
-                                <% } else { %>
-                                    <span class="badge bg-secondary">Disabled</span>
-                                    <% } %>
-                        </td>
-                        <td>
-                            <%= programme.board_deadline ? new
-                                Date(programme.board_deadline).toLocaleDateString('en-GB') : '—' %>
-                        </td>
-                        <td>
-                            <a href="/admin/programmes/<%= programme.id %>/edit"
-                                class="btn btn-sm btn-outline-primary">Edit</a>
-                        </td>
-                    </tr>
-                    <% }) %>
-            </tbody>
-        </table>
+        <div class="container-fluid mt-4 px-4 admin-programmes">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+
+                <a href="/admin/dashboard" class="btn btn-secondary mb-3">Back to Dashboard</a>
+                <h1>Degree Programmes</h1>
+
+            </div>
+
+            <a href="/admin/programmes-new" class="btn btn-primary mb-3">Add Programme</a>
+
+            <div class="table-responsive">
+                <table class="table table-hover admin-programmes-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Title</th>
+                            <th>Y2 Weight</th>
+                            <th>Y3 Weight</th>
+                            <th>Resit Cap</th>
+                            <th>Board Deadline</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% programmes.forEach(programme=> { %>
+                            <tr>
+                                <td><%= programme.code %></td>
+                                <td>
+                                    <%= programme.title %>
+                                </td>
+                                <td>
+                                    <%= (programme.y2_weight * 100).toFixed(0) %>%
+                                </td>
+                                <td>
+                                    <%= (programme.y3_weight * 100).toFixed(0) %>%
+                                </td>
+                                <td>
+                                    <% if (programme.resit_cap_enabled) { %>
+                                        <span class="badge bg-warning text-dark">
+                                            Capped @ <%= programme.resit_cap_mark %>
+                                        </span>
+                                        <% } else { %>
+                                            <span class="badge bg-secondary">Disabled</span>
+                                            <% } %>
+                                </td>
+                                <td>
+                                    <%= programme.board_deadline ? new
+                                        Date(programme.board_deadline).toLocaleDateString('en-GB') : '—' %>
+                                </td>
+                                <td>
+                                    <a href="/admin/programmes/<%= programme.id %>/edit"
+                                        class="btn btn-sm btn-primary">Edit</a>
+                                </td>
+                            </tr>
+                            <% }) %>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
         <%- include('../partials/footer') %>

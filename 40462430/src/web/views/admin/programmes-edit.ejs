@@ -1,6 +1,5 @@
 <%- include('../partials/head', { title: 'Edit Programme' }) %>
     <%- include('../partials/nav') %>
-        <h2 class="mb-4">Edit Programme</h2>
 
         <% if (error) { %>
             <div class="alert alert-danger">
@@ -8,47 +7,61 @@
             </div>
             <% } %>
 
-                <form action="/admin/programmes/<%= programme.id %>/edit" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Programme Code</label>
-                        <input type="text" name="code" class="form-control" value="<%= programme.code %>" required>
+                <div class="container-fluid mt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a href="/admin/programmes" class="btn btn-secondary">Back to Programme List</a>
+                        <h2 class="mb-0">Edit Programme <%= programme.title %>
+                        </h2>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Title</label>
-                        <input type="text" name="title" class="form-control" value="<%= programme.title %>" required>
+
+                    <div class="form-container">
+                        <form action="/admin/programmes/<%= programme.id %>/edit" method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Programme Code</label>
+                                <input type="text" name="code" class="form-control" value="<%= programme.code %>"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input type="text" name="title" class="form-control" value="<%= programme.title %>"
+                                    required>
+                            </div>
+                            <div class="row">
+                                <div class="col mb-3">
+                                    <label class="form-label">Year 2 Weight</label>
+                                    <input type="number" name="y2_weight" class="form-control" step="0.01" min="0"
+                                        max="1" value="<%= programme.y2_weight %>" required>
+                                </div>
+                                <div class="col mb-3">
+                                    <label class="form-label">Year 3 Weight</label>
+                                    <input type="number" name="y3_weight" class="form-control" step="0.01" min="0"
+                                        max="1" value="<%= programme.y3_weight %>" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Resit Cap</label>
+                                <select name="resit_cap_enabled" class="form-select">
+                                    <option value="1" <%=programme.resit_cap_enabled ? 'selected' : '' %>>Enabled
+                                    </option>
+                                    <option value="0" <%=!programme.resit_cap_enabled ? 'selected' : '' %>>Disabled
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Resit Cap Mark</label>
+                                <input type="number" name="resit_cap_mark" class="form-control"
+                                    value="<%= programme.resit_cap_mark %>" min="0" max="100">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Board Deadline</label>
+                                <input type="date" name="board_deadline" class="form-control"
+                                    value="<%= programme.board_deadline ? new Date(programme.board_deadline).toISOString().split('T')[0] : '' %>">
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <a href="/admin/programmes" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
                     </div>
-                    <div class="row">
-                        <div class="col mb-3">
-                            <label class="form-label">Year 2 Weight</label>
-                            <input type="number" name="y2_weight" class="form-control" step="0.01" min="0" max="1"
-                                value="<%= programme.y2_weight %>" required>
-                        </div>
-                        <div class="col mb-3">
-                            <label class="form-label">Year 3 Weight</label>
-                            <input type="number" name="y3_weight" class="form-control" step="0.01" min="0" max="1"
-                                value="<%= programme.y3_weight %>" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Resit Cap</label>
-                        <select name="resit_cap_enabled" class="form-select">
-                            <option value="1" <%=programme.resit_cap_enabled ? 'selected' : '' %>>Enabled</option>
-                            <option value="0" <%=!programme.resit_cap_enabled ? 'selected' : '' %>>Disabled</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Resit Cap Mark</label>
-                        <input type="number" name="resit_cap_mark" class="form-control"
-                            value="<%= programme.resit_cap_mark %>" min="0" max="100">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Board Deadline</label>
-                        <input type="date" name="board_deadline" class="form-control"
-                            value="<%= programme.board_deadline ? new Date(programme.board_deadline).toISOString().split('T')[0] : '' %>">
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                        <a href="/admin/programmes" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
+                </div>
                 <%- include('../partials/footer') %>

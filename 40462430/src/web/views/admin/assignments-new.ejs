@@ -1,40 +1,53 @@
 <%- include('../partials/head', { title: 'New Assignment' }) %>
-<%- include('../partials/nav') %>
+    <%- include('../partials/nav') %>
 
 
-<h2 class="mb-4">Assign Officer to Programme</h2>
 
-            <% if (error) { %>
-                <div class="alert alert-danger"><%= error %></div>
+
+        <% if (error) { %>
+            <div class="alert alert-danger">
+                <%= error %>
+            </div>
             <% } %>
 
-            <form action="/admin/assignments" method="POST">
-                <div class="mb-3">
-                    <label class="form-label">Officer</label>
-                    <select name="officer_id" class="form-select" required>
-                        <option value="">Select an officer...</option>
-                        <% officers.forEach(officer => { %>
-                            <option value="<%= officer.id %>">
-                                <%= officer.first_name %> <%= officer.surname %>
-                            </option>
-                        <% }) %>
-                    </select>
+                <div class="container-fluid mt-4 px-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a href="/admin/assignments" class="btn btn-secondary">Back to Assignments</a>
+                        <h2 class="mb-4">Assign Officer to Programme</h2>
+                    </div>
+
+                    <div class="form-container">
+                        <form action="/admin/assignments" method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Officer</label>
+                                <select name="officer_id" class="form-select" required>
+                                    <option value="">Select an officer...</option>
+                                    <% officers.forEach(officer=> { %>
+                                        <option value="<%= officer.id %>">
+                                            <%= officer.first_name %>
+                                                <%= officer.surname %>
+                                        </option>
+                                        <% }) %>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Programme</label>
+                                <select name="programme_id" class="form-select" required>
+                                    <option value="">Select a programme...</option>
+                                    <% programmes.forEach(programme=> { %>
+                                        <option value="<%= programme.id %>">
+                                            <%= programme.code %> — <%= programme.title %>
+                                        </option>
+                                        <% }) %>
+                                </select>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">Assign</button>
+                                <a href="/admin/assignments" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Programme</label>
-                    <select name="programme_id" class="form-select" required>
-                        <option value="">Select a programme...</option>
-                        <% programmes.forEach(programme => { %>
-                            <option value="<%= programme.id %>">
-                                <%= programme.code %> — <%= programme.title %>
-                            </option>
-                        <% }) %>
-                    </select>
-                </div>
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Assign</button>
-                    <a href="/admin/assignments" class="btn btn-outline-secondary">Cancel</a>
-                </div>
-            </form>
-            
-<%- include('../partials/footer') %>
+
+                <%- include('../partials/footer') %>
