@@ -1,171 +1,300 @@
 <%- include('../partials/head', {title: `Student Detail - ${student.first_name} ${student.surname}`}) %>
-<%- include('../partials/nav') %>
+    <%- include('../partials/nav') %>
 
-<a href="/officer/students?programme=<%= programmeId %> " class="btn btn-secondary">Back to Students</a>
 
-    <% if (error) { %>
-        <div class="alert alert-warning"><%= error %></div>
-    <% } %>
 
-    <h2 class="mb-4">Student Details</h2>
-
-    <a href="/officer/students/<%= student.id %>/edit?programme=<%= programmeId %>" class="btn btn-sm btn-outline-secondary mb-3">Edit Student</a>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title"><%= student.first_name %> <%= student.surname %></h5>
-            <p class="card-text"><strong>Student Number:</strong> <%= student.student_number %></p>
-            <p class="card-text"><strong>Academic Year:</strong> <%= student.academic_year %></p>
-            <% if (student.has_mc) { %>
-                <p class="card-text"><strong>Mitigating Circumstances:</strong> Yes</p>
-                <p class="card-text"><strong>MC Notes:</strong> <%= student.mc_notes %></p>
-            <% } else { %>
-                <p class="card-text"><strong>Mitigating Circumstances:</strong> No</p>
+        <% if (error) { %>
+            <div class="alert alert-warning">
+                <%= error %>
+            </div>
             <% } %>
-            <% if (classification) { %>
-                <% if (classification.confirmed_at) { %>
-                    <span class="badge bg-success">Classification Confirmed</span>
-                <% } else if (classification.override_applied) { %>
-                    <span class="badge bg-warning text-dark">Override Applied</span>
-                <% }  %>
-                <p class="card-text"><strong>Classification:</strong> <%= classification.classification_code %></p>
-            <% } else { %>
-                <p class="card-text"><strong>Classification:</strong> Pending</p>
-            <% } %> 
-        </div>
-    </div>
 
-    <a href="/officer/students/<%= student.id %>/modules/new?programme=<%= programmeId %>" class="btn btn-sm btn-outline-secondary mb-3">Add Module Result</a>
-    <h3 class="mb-3">Module Results</h3>
-    <table class="table table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Module Code</th>
-                <th>Module Title</th>
-                <th>Mark</th>
-                <th>Year</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% if (modules.length === 0) { %>
-                <tr>
-                    <td colspan="3">No module results available.</td>
-                </tr>
-            <% } else { %>
-                <% modules.forEach(module => { %>
-                    <tr>
-                        <td><%= module.module_code %></td>
-                        <td><%= module.module_name %></td>
-                        <td><%= module.mark %></td>
-                        <td><%= module.year_of_study %></td>
-                        <td>
-                            <% if (module.is_resit) { %>
-                                <span class="badge bg-warning text-dark">Resit</span>
-                            <% } %>
-                        </td>
-                        <td>
-                            <% if (classification && classification.confirmed_at) { %>
-                                <span class="badge bg-secondary">Classification Confirmed - Edit Disabled</span>
-                                <button class="btn btn-sm btn-secondary" disabled>Edit</button>
-                            </span>
-                            <% } else { %>
-                            <a href="/officer/students/<%= student.id %>/modules/<%= module.id %>/edit?programme=<%= programmeId %>" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <% } %>
-                        </td>
-                    </tr>
-                <% }) %>
-            <% } %>
-        </tbody>
-    </table>
+                <div class="container-fluid mt-4 px-4 student-details">
 
-<% if (classification && classification.confirmed_at) { %>
-    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed - Re-Calculate Classification is disabled">Re-Calculate Classification</button>
-    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed - Override Classification is disabled">Override Classification</button>
-    <button class="btn btn-sm btn-secondary mb-3" disabled title="Classification is confirmed - Confirm Classification is disabled">Confirm Classification</button>
-    <form action="/officer/students/<%= student.id %>/classify/remove?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Removing will delete classification from database and cannot be undone. Proceed?')">
-        <button type="submit" class="btn btn-sm btn-danger mb-3">Remove Classification</button>
-    </form>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a href="/officer/students?programme=<%= programmeId %>" class="btn btn-secondary"> Back to
+                            Students</a>
+                        <h1>
+                            <%= student.first_name %>
+                                <%= student.surname %>
+                        </h1>
+                    </div>
 
-<% } else if (classification) { %>
-    <form action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Re-calculating will remove any existing officer override and update classification. Proceed?')">
-        <button type="submit" class="btn btn-sm btn-primary mb-3">Re-Calculate Classification</button>
-    </form>
-    <% if (!classification.override_applied) { %>
-        <a href="/officer/students/<%= student.id %>/classify/override?programme=<%= programmeId %>" class="btn btn-sm btn-warning mb-3">Override Classification</a>
-    <% } %>
-    <form action="/officer/students/<%= student.id %>/classify/confirm?programme=<%= programmeId %>" method="POST">
-        <button type="submit" class="btn btn-sm btn-success mb-3">Confirm Classification</button>
-    </form>
-    <form action="/officer/students/<%= student.id %>/classify/remove?programme=<%= programmeId %>" method="POST" onsubmit="return confirm('Removing will delete classification from database and cannot be undone. Proceed?')">
-        <button type="submit" class="btn btn-sm btn-danger mb-3">Remove Classification</button>
-    </form>
+                    <div class="row studentAndClass">
 
-<% } else { %>
-    <form action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>" method="POST">
-        <button type="submit" class="btn btn-sm btn-primary mb-3">Calculate Classification</button>
-    </form>
-<% } %>
-
-    <h3 class="mb-3">Classification Results</h3>
-    <table class="table table-hover">
-        <% if (!classification) { %>
-            <tr>
-                <td colspan="2">No classification results available.</td>
-            </tr>
-        <% } else { %>
-            <tr>
-                <td><%= classification.classification_code %></td>
-                <td><%= classification.classification_label %></td>
-                <td><%= classification.final_average %></td>
-                <td><%= classification.is_eligible ? 'Yes' : 'No' %></td>
-                <% if (!classification.is_eligible && classification.ineligibility_reason) { %>
-                    <td><strong>Ineligibility Reason:</strong> <%= classification.ineligibility_reason %></td>
-                <% } %>
-
-                <td><%= new Date(classification.calculated_at).toLocaleDateString('en-GB') %></td>
-            </tr>
-        <% } %>
-    </table>
-
-    <% if (classification && classification.override_applied) { %>
-    <div class="card mb-4">
-        <span class="badge bg-warning text-dark">Override Applied</span>
-        <div class="card-header">Override Details</div>
-        <div class="card-body">
-            <p><strong>Override Rationale:</strong> <%= classification.override_rationale %></p>
-            <p><strong>Overridden By:</strong> <%= classification.override_by %></p>
-            <p><strong>Overridden At:</strong> <%= new Date(classification.override_at).toLocaleDateString('en-GB') %></p>
-        </div>
-    </div>
-    
-<% } %>
-
-    <% if (classification && classification.rationale_log) { %>
-    <div class="card mb-4">
-        <div class="card-header">Classification Rationale</div>
-        <div class="card-body">
-            <ul class="list-unstyled mb-0">
-                <% classification.rationale_log.forEach(entry => { %>
-                    <li class="mb-1">
-                        <% if (entry.type === 'ok') { %>
-                            <span class="text-success">✓</span>
-                        <% } else if (entry.type === 'warn') { %>
-                            <span class="text-warning">⚠</span>
-                        <% } else if (entry.type === 'fail') { %>
-                            <span class="text-danger">✗</span>
-                        <% } else { %>
-                            <span class="text-muted">ℹ</span>
-                        <% } %>
-                        <%= entry.message %>
-                    </li>
-                <% }) %>
-            </ul>
-        </div>
-    </div>
-<% } %>
+                        <div class="col-12 col-lg-4">
 
 
 
+                            <div class="card mb-4 bg-opacity-75 bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <%= student.first_name %>
+                                            <%= student.surname %>
+                                    </h5>
+                                    <p class="card-text"><strong>Student Number:</strong>
+                                        <%= student.student_number %>
+                                    </p>
+                                    <p class="card-text"><strong>Academic Year:</strong>
+                                        <%= student.academic_year %>
+                                    </p>
+                                    <% if (student.has_mc) { %>
+                                        <p class="card-text"><strong>Mitigating Circumstances:</strong> Yes</p>
+                                        <p class="card-text"><strong>MC Notes:</strong>
+                                            <%= student.mc_notes %>
+                                        </p>
+                                        <% } else { %>
+                                            <p class="card-text"><strong>Mitigating Circumstances:</strong> No</p>
+                                            <% } %>
+                                                <% if (classification) { %>
+                                                    <% if (classification.confirmed_at) { %>
+                                                        <span class="badge bg-success">Classification Confirmed</span>
+                                                        <% } else if (classification.override_applied) { %>
+                                                            <span class="badge bg-warning text-dark">Override
+                                                                Applied</span>
+                                                            <% } %>
+                                                                <p class="card-text"><strong>Classification:</strong>
+                                                                    <%= classification.classification_code %>
+                                                                </p>
+                                                                <% } else { %>
+                                                                    <p class="card-text">
+                                                                        <strong>Classification:</strong>
+                                                                        Pending
+                                                                    </p>
+                                                                    <% } %>
+                                                                        <a href="/officer/students/<%= student.id %>/edit?programme=<%= programmeId %>"
+                                                                            class="btn btn-secondary">Edit Student</a>
+                                </div>
+                            </div>
+
+                            <div class="card mb-4 bg-opacity-75 bg-light">
+                                <div class="card-body">
+                                    
+
+                                    <div class="d-flex flex-wrap classification-buttons gap-2 justify-content-evenly">
+                                        <% if (classification && classification.confirmed_at) { %>
+                                            <button class="btn btn-secondary mb-3" disabled
+                                                title="Classification is confirmed - Re-Calculate Classification is disabled">Re-Calculate
+                                                Classification</button>
+                                            <button class="btn btn-secondary mb-3" disabled
+                                                title="Classification is confirmed - Override Classification is disabled">Override
+                                                Classification</button>
+                                            <button class="btn btn-secondary mb-3" disabled
+                                                title="Classification is confirmed - Confirm Classification is disabled">Confirm
+                                                Classification</button>
+                                            <form
+                                                action="/officer/students/<%= student.id %>/classify/remove?programme=<%= programmeId %>"
+                                                method="POST"
+                                                onsubmit="return confirm('Removing will delete classification from database and cannot be undone. Proceed?')">
+                                                <button type="submit" class="btn btn-danger mb-3">Remove
+                                                    Classification</button>
+                                            </form>
+
+                                            <% } else if (classification) { %>
+                                                <form
+                                                    action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Re-calculating will remove any existing officer override and update classification. Proceed?')">
+                                                    <button type="submit"
+                                                        class="btn btn-primary mb-3">Re-Calculate
+                                                        Classification</button>
+                                                </form>
+                                                <% if (!classification.override_applied) { %>
+                                                    <a href="/officer/students/<%= student.id %>/classify/override?programme=<%= programmeId %>"
+                                                        class="btn btn-warning mb-3">Override Classification</a>
+                                                    <% } %>
+                                                        <form
+                                                            action="/officer/students/<%= student.id %>/classify/confirm?programme=<%= programmeId %>"
+                                                            method="POST">
+                                                            <button type="submit"
+                                                                class="btn btn-success mb-3">Confirm
+                                                                Classification</button>
+                                                        </form>
+                                                        <form
+                                                            action="/officer/students/<%= student.id %>/classify/remove?programme=<%= programmeId %>"
+                                                            method="POST"
+                                                            onsubmit="return confirm('Removing will delete classification from database and cannot be undone. Proceed?')">
+                                                            <button type="submit"
+                                                                class="btn btn-danger mb-3">Remove
+                                                                Classification</button>
+                                                        </form>
+
+                                                        <% } else { %>
+                                                            <form
+                                                                action="/officer/students/<%= student.id %>/classify?programme=<%= programmeId %>"
+                                                                method="POST">
+                                                                <button type="submit"
+                                                                    class="btn btn-primary mb-3">Calculate
+                                                                    Classification</button>
+                                                            </form>
+                                                            <% } %>
+
+                                    </div>
+
+                                    <h3 class="mb-3">Classification Results</h3>
+                                    <table class="table ">
+                                        <% if (!classification) { %>
+                                            <tr>
+                                                <td colspan="2">No classification results available.
+                                                </td>
+                                            </tr>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td>
+                                                        <%= classification.classification_code %>
+                                                    </td>
+                                                    <td>
+                                                        <%= classification.classification_label %>
+                                                    </td>
+                                                    <td>
+                                                        <%= classification.final_average %>
+                                                    </td>
+                                                    <td>
+                                                        <%= classification.is_eligible ? 'Yes' : 'No' %>
+                                                    </td>
+                                                    <% if (!classification.is_eligible &&
+                                                        classification.ineligibility_reason) { %>
+                                                        <td><strong>Ineligibility Reason:</strong>
+                                                            <%= classification.ineligibility_reason %>
+                                                        </td>
+                                                        <% } %>
+
+                                                            <td>
+                                                                <%= new
+                                                                    Date(classification.calculated_at).toLocaleDateString('en-GB')
+                                                                    %>
+                                                            </td>
+                                                </tr>
+                                                <% } %>
+                                    </table>
+
+                                </div>
+                            </div>
+
+                                <% if (classification && classification.override_applied) { %>
+                                    <div class="card mb-4">
+                                        <span class="badge bg-warning text-dark">Override
+                                            Applied</span>
+                                        <div class="card-header">Override Details</div>
+                                        <div class="card-body">
+                                            <p><strong>Override Rationale:</strong>
+                                                <%= classification.override_rationale %>
+                                            </p>
+                                            <p><strong>Overridden By:</strong>
+                                                <%= classification.override_by %>
+                                            </p>
+                                            <p><strong>Overridden At:</strong>
+                                                <%= new Date(classification.override_at).toLocaleDateString('en-GB') %>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <% } %>
+
+                                        <% if (classification && classification.rationale_log) { %>
+                                            <div class="card mb-4" bg-opacity-75 bg-light>
+                                                <div class="card-header">Classification Rationale
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul class="list-unstyled mb-0">
+                                                        <% classification.rationale_log.forEach(entry=>
+                                                            { %>
+                                                            <li class="mb-1">
+                                                                <% if (entry.type==='ok' ) { %>
+                                                                    <span class="text-success">✓</span>
+                                                                    <% } else if (entry.type==='warn' ) { %>
+                                                                        <span class="text-warning">⚠</span>
+                                                                        <% } else if (entry.type==='fail' ) { %>
+                                                                            <span class="text-danger">✗</span>
+                                                                            <% } else { %>
+                                                                                <span class="text-muted">ℹ</span>
+                                                                                <% } %>
+                                                                                    <%= entry.message %>
+                                                            </li>
+                                                            <% }) %>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <% } %>
+                            </div>
+
+                            <div class="col-12 col-lg-8">
+
+                                <div class="mb-4 module-content">
+
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                        <h3 class="mb-3">Module Results</h3>
+                                        <a href="/officer/students/<%= student.id %>/modules/new?programme=<%= programmeId %>"
+                                            class="btn btn-primary mb-3">Add Module Result</a>
+
+                                    </div>
+
+                                    <table class="table table-hover module-results">
+                                        <thead>
+                                            <tr>
+                                                <th>Module Code</th>
+                                                <th>Module Title</th>
+                                                <th>Mark</th>
+                                                <th>Year</th>
+                                                <th>Resit</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (modules.length===0) { %>
+                                                <tr>
+                                                    <td colspan="3">No module results available.</td>
+                                                </tr>
+                                                <% } else { %>
+                                                    <% modules.forEach(module=> { %>
+                                                        <tr>
+                                                            <td>
+                                                                <%= module.module_code %>
+                                                            </td>
+                                                            <td>
+                                                                <%= module.module_name %>
+                                                            </td>
+                                                            <td>
+                                                                <%= module.mark %>
+                                                            </td>
+                                                            <td>
+                                                                <%= module.year_of_study %>
+                                                            </td>
+                                                            <td>
+                                                                <% if (module.is_resit) { %>
+                                                                    <span
+                                                                        class="badge bg-warning text-dark">Resit</span>
+                                                                    <% } %>
+                                                            </td>
+                                                            <td>
+                                                                <% if (classification && classification.confirmed_at) {
+                                                                    %>
+                                                                    <span class="badge bg-secondary">Classification
+                                                                        Confirmed - Edit
+                                                                        Disabled</span>
+                                                                    <button class="btn btn-sm btn-secondary"
+                                                                        disabled>Edit</button>
+                                                                    </span>
+                                                                    <% } else { %>
+                                                                        <a href="/officer/students/<%= student.id %>/modules/<%= module.id %>/edit?programme=<%= programmeId %>"
+                                                                            class="btn btn-sm btn-primary">Edit</a>
+                                                                        <% } %>
+                                                            </td>
+                                                        </tr>
+                                                        <% }) %>
+                                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
 
 
-<%- include('../partials/footer') %>
+
+
+
+                        </div>
+
+
+
+                        <%- include('../partials/footer') %>

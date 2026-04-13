@@ -157,7 +157,7 @@ body::before {
 
 }
 
-.studentTable {
+.studentTable, .module-results {
     --bs-table-bg: rgba(31, 41, 109, 0.651);
     --bs-table-color: #fff;
     --bs-table-border-color: rgba(255, 255, 255, 0.425);
@@ -165,7 +165,7 @@ body::before {
     --bs-table-hover-color: #fff;
 }
 
-.studentTable thead {
+.studentTable, .module-results thead {
     background-color: rgba(255, 255, 255, 0.799);
 }
 
@@ -177,13 +177,19 @@ body::before {
 }
 
 .form-container {
-    background-color: rgb(255, 255, 255);
+    background-color: rgba(255, 255, 255, 0.884);
     box-shadow: 0 4px 8px rgba(41, 41, 41, 0.351);
     margin: 0 auto;
     max-width: 600px;
     border-radius: 8px;
     padding: 2em;
     margin-bottom: 2em;
+    
+}
+
+.module-content h3 {
+    color: rgb(254, 254, 254);
+
 }
 
 

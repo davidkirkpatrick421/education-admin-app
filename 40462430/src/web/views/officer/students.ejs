@@ -16,7 +16,7 @@
                             <div class="programme-buttons d-flex flex-wrap gap-2 mb-3">
                                 <a href="/officer/dashboard" class="btn btn-secondary">Back to Dashboard</a>
                                 <a href="/officer/students/new?programme=<%= programmeId %>"
-                                    class="btn btn-outline-primary ">Add New Student</a>
+                                    class="btn btn-primary ">Add New Student</a>
 
                                 <% if (confirmedCount> 0) { %>
                                     <% if (confirmedCount < totalStudents) { %>
@@ -27,7 +27,7 @@
                                         </a>
                                         <% } else { %>
                                             <a href="/officer/students/export?programme=<%= programmeId %>"
-                                                class="btn btn-outline-success">
+                                                class="btn btn-success">
                                                 Export for Exam Board
                                             </a>
                                             <% } %>
