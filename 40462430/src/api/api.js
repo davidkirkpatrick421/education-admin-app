@@ -589,6 +589,10 @@ api.post('/officer/students/:id/delete', async (req, res) => {
 
     try {
         await db.promise().query(
+            `DELETE FROM classification_results WHERE student_id = ?`,
+            [studentId]
+        );
+        await db.promise().query(
             `DELETE FROM students WHERE id = ?`,
             [studentId]
         );

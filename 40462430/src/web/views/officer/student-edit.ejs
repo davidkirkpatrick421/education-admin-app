@@ -1,50 +1,74 @@
 <%- include('../partials/head', {title: `Edit Student - ${student.first_name} ${student.surname}`}) %>
-<%- include('../partials/nav') %>
+    <%- include('../partials/nav') %>
 
-<h1>Edit Student: <%= student.first_name %> <%= student.surname %></h1>
 
-    <% if (error) { %>
-        <div class="alert alert-warning"><%= error %></div>
-    <% } %>
 
-<form action="/officer/students/<%= student.id %>/edit" method="POST">
-    <input type="hidden" name="programme_id" value="<%= programmeId %>">
-    <div class="mb-3">
-        <label class="form-label">Student Number</label>
-        <input type="text" name="student_number" class="form-control" value="<%= student.student_number %>" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">First Name</label>
-        <input type="text" name="first_name" class="form-control" value="<%= student.first_name %>" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Surname</label>
-        <input type="text" name="surname" class="form-control" value="<%= student.surname %>" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Academic Year</label>
-        <input type="number" name="academic_year" class="form-control" value="<%= student.academic_year %>" required>
-    </div>
-    <div class="mb-3 form-check">
-        <input type="checkbox" name="has_mc" class="form-check-input" id="hasMCCheck" <%= student.has_mc ? 'checked' : '' %>>
-        <label class="form-check-label" for="hasMCCheck">Mitigating Circumstances</label>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">MC Notes (optional)</label>
-        <input type="text" name="mc_notes" class="form-control" value="<%= student.mc_notes %>">
-    </div>
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a href="/officer/students?programme=<%= programmeId %>" class="btn btn-outline-secondary">Cancel</a>
-    </div>
-</form>
+        <% if (error) { %>
+            <div class="alert alert-warning">
+                <%= error %>
+            </div>
+            <% } %>
 
-<form action="/officer/students/<%= student.id %>/delete" method="POST" class="btn btn-danger">
-    <button type="submit" class="btn btn-danger"
-        onclick="return confirm('Are you sure you want to delete this student? This action cannot be undone.')">
-        Delete Student
-    </button>
-    
-</form>
+                <div class="container-fluid mt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a href="/officer/students/<%= student.id %>?programme=<%= programmeId %>"
+                            class="btn btn-secondary">Back to Student Details</a>
+                        <h1>Edit Student: <%= student.first_name %>
+                                <%= student.surname %>
+                        </h1>
+                    </div>
+                    <div class="form-container">
+                        <form action="/officer/students/<%= student.id %>/edit" method="POST" id="editForm">
+                            <input type="hidden" name="programme_id" value="<%= programmeId %>">
+                            <div class="mb-3">
+                                <label class="form-label">Student Number</label>
+                                <input type="text" name="student_number" class="form-control"
+                                    value="<%= student.student_number %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" name="first_name" class="form-control"
+                                    value="<%= student.first_name %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Surname</label>
+                                <input type="text" name="surname" class="form-control" value="<%= student.surname %>"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Academic Year</label>
+                                <input type="number" name="academic_year" class="form-control"
+                                    value="<%= student.academic_year %>" required>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" name="has_mc" class="form-check-input" id="hasMCCheck"
+                                    <%=student.has_mc ? 'checked' : '' %>>
+                                <label class="form-check-label" for="hasMCCheck">Mitigating Circumstances</label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">MC Notes (optional)</label>
+                                <input type="text" name="mc_notes" class="form-control" value="<%= student.mc_notes %>">
+                            </div>
 
-<%- include('../partials/footer') %>
+                        </form>
+                        <div class="d-flex gap-2 align-items-center">
+                            <button type="submit" form="editForm" class="btn btn-primary">Save Changes</button>
+                            <a href="/officer/students/<%= student.id %>?programme=<%= programmeId %>"
+                                class="btn btn-secondary">Cancel</a>
+                            <form action="/officer/students/<%= student.id %>/delete?programme=<%= programmeId %>"
+                                method="POST">
+                                <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Are you sure you want to delete this student? This cannot be undone.')">
+                                    Delete Student
+                                </button>
+                            </form>
+                        </div>
+
+
+
+
+
+                    </div>
+                </div>
+
+                <%- include('../partials/footer') %>
