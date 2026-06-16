@@ -4,9 +4,11 @@
   "description": "Academic degree classification web application (Node.js + PostgreSQL)",
   "type": "module",
   "scripts": {
-    "dev:web": "nodemon src/web/web.js",
-    "dev:api": "nodemon src/api/api.js",
-    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\""
+    "dev:web": "nodemon src/web/server.js",
+    "dev:api": "nodemon src/api/server.js",
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "start:web": "node src/web/server.js",
+    "start:api": "node src/api/server.js"
   },
   "keywords": [],
   "author": "",
