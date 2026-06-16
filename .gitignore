@@ -2,3 +2,5 @@
 *.zip
 node_modules/
 .env
+CLAUDE.md
+
