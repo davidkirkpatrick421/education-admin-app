@@ -1,47 +1,43 @@
+# HEdClass
 
-**HEdClass - Web App**
-*David Kirkpatrick - 40462430*
+A web application for managing **higher-education degree classifications**. It lets a
+department record students, their module results across the years of a programme, and
+then runs each student through a rules-based **classification engine** that determines
+their final degree outcome (1st, 2:1, 2:2, 3rd) — including resit caps, eligibility
+checks and borderline flagging — with a full rationale for every decision.
 
--- Setup and Installation Instructions --
+## What it does
 
-1. Extract the ZIP folder '40462430.zip' to computer
-2. Navigate to the root folder in terminal and run npm install to install node dependencies
+- **Role-based access** — an *Admin* manages programmes, classification officers and
+  their programme assignments; *Officers* manage the students on the programmes they are
+  assigned to.
+- **Students & modules** — record students against a programme and capture their module
+  marks, credits and resit status per year of study.
+- **Classification engine** — applies each programme's weighting and resit rules to
+  calculate the degree classification, flags borderline cases, and records a transparent
+  rationale log for auditing.
+- **Override & confirm workflow** — officers can override a calculated result with a
+  documented reason and confirm final outcomes ready for an exam board.
 
-3. Start MAMP DB server and verify it's running on PORT 8889 (Default MAMP). Confirm your MySQL MAMP credentials match the default used in the '.env' below, or edit these config values.
-4. Navigate to phpMyAdmin in browser at 'http://localhost:8888/phpMyAdmin' and select import
-5. Choose file and navigate to project folder 'src/seeder/data.sql' and import to create the database and seed sample test data
+## Tech stack
 
-An '.env' environment variable file is included in the zip and the codebase uses this for all  config values with placeholders in the web and api server for robust adaptability and security to model production.
+- **Node.js** (ES modules) with two **Express** servers — a presentation/web tier and an
+  internal REST API tier — following an **MVC** structure (routes → controllers → models).
+- **EJS** server-side templating with **Bootstrap** and **Chart.js**.
+- **PostgreSQL** for the data tier.
+- **Docker** for containerised deployment and **GitHub Actions** for CI/CD.
 
-WEB_PORT=4000
-API_PORT=5000
-API_URL=http://localhost:5000
+## Live demo
 
-DB_USER=root
-DB_PASSWORD=root
-DB_HOST=localhost
-DB_NAME=40462430
-DB_PORT=8889
+🚧 *A hosted live demo is coming soon — the URL will be added here once deployed.*
 
-6. In the project folder root '40462430' run command 'npm run dev' to start dev setup with API and webserver with nodemon concurrently
+Demo credentials (for the live environment):
 
-7. Open browser and navigate to 'http://localhost:4000'
-8. Login with test credentials below to access the web app
+| Role    | Email                   | Password    |
+|---------|-------------------------|-------------|
+| Admin   | admin@hedclass.demo     | admin123    |
+| Officer | officer1@hedclass.demo  | officer123  |
+| Officer | officer2@hedclass.demo  | officer456  |
 
-
--- Using the web-app --
-
-The seed data is set up with 3 users to test the system; an admin role and 2 officers; 1 officer assigned to programme 1 and officer 2 assigned to programme 1 and 2. The passwords are saved as hash values in the database but are pre-hashed for the test users. Login details are:
-
-| Role    | Email                  | Password   |
-|---------|------------------------|------------|
-| Admin   | admin@qub.ac.uk        | admin123   |
-| Officer | officer1@qub.ac.uk     | officer123 |
-| Officer | officer2@qub.ac.uk     | officer456 |
-
-Both programmes, students and module results in the seed test data show a variety of test cases and variables across the site functionality.
-
-
-
-
-
+The demo data includes multiple programmes, students and module results that exercise a
+range of classification scenarios.
