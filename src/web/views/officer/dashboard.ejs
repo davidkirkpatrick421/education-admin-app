@@ -68,7 +68,14 @@
                                                         <div class="card-text">
                                                             <p>This chart shows the distribution of classifications
                                                                 for students in this programme.</p>
-                                                            <canvas id="classificationChart"></canvas>
+                                                            <canvas id="classificationChart" data-distribution="<%= JSON.stringify([
+                                                                stats.distribution['1st'],
+                                                                stats.distribution['2:1'],
+                                                                stats.distribution['2:2'],
+                                                                stats.distribution['3rd'],
+                                                                stats.distribution['fail'],
+                                                                stats.distribution['ineligible']
+                                                            ]) %>"></canvas>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -80,59 +87,6 @@
 
 
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script>
-                    const distributionData = <%- JSON.stringify([
-                        stats.distribution['1st'],
-                        stats.distribution['2:1'],
-                        stats.distribution['2:2'],
-                        stats.distribution['3rd'],
-                        stats.distribution['fail'],
-                        stats.distribution['ineligible']
-                    ]); %>;
-
-                    const ctx = document.getElementById('classificationChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['1st', '2:1', '2:2', '3rd', 'Fail', 'Ineligible'],
-                            datasets: [{
-                                label: 'Students',
-                                data: distributionData,
-                                backgroundColor: [
-                                    '#bfa5a3',
-                                    'rgb(39, 41, 109)',
-                                    '#787586',
-                                    '#484554',
-                                    '#ada9bb',
-                                    '#484554'
-                                ]
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y',
-                            layout: {
-
-                            },
-                            responsive: true,
-                            aspectRatio: 2,
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    labels: {
-                                        color: 'rgb(39, 41, 109)',
-                                        font: {
-                                            size: '12%',
-                                            weight: 'bold'
-                                        }
-                                    }
-                                },
-                                title: { display: true, text: 'Student Classification Distribution', color: 'rgb(0,0,0)' }
-                            },
-                            scales: {
-                                y: { beginAtZero: true, ticks: { stepSize: 1 } }
-                            }
-                        }
-                    });
-                </script>
+                <script src="/js/dashboard-chart.js"></script>
 
                 <%- include('../partials/footer') %>
