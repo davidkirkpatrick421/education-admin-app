@@ -4,8 +4,8 @@ import * as classificationModel from '../models/classificationResult.model.js';
 import * as programmeModel from '../models/programme.model.js';
 import { requireFields } from '../lib/validate.js';
 
-// Convert an HTML checkbox value ('on' / undefined) to a 1/0 flag.
-const checkbox = (value) => (value === 'on' ? 1 : 0);
+// Convert an HTML checkbox value ('on' / undefined) to a boolean flag.
+const checkbox = (value) => value === 'on';
 
 // GET /officer/students/programme/:programme_id — students + classification summary.
 export async function listByProgramme(req, res) {

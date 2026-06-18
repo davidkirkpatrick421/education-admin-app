@@ -2,7 +2,7 @@ import * as moduleModel from '../models/moduleResult.model.js';
 import * as classificationModel from '../models/classificationResult.model.js';
 import { requireFields, validMark, validCredits, validYearOfStudy } from '../lib/validate.js';
 
-const checkbox = (value) => (value === 'on' ? 1 : 0);
+const checkbox = (value) => value === 'on';
 
 // Validate a module result payload; returns an error message or null.
 function validateModule(body) {

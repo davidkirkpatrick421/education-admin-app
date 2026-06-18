@@ -63,7 +63,7 @@ export async function update(req, res) {
 // POST /officers/:id/deactivate
 export async function deactivate(req, res) {
     try {
-        await userModel.setOfficerActive(req.params.id, 0);
+        await userModel.setOfficerActive(req.params.id, false);
         res.json({ message: 'Officer deactivated successfully' });
     } catch (error) {
         console.error('Error deactivating officer:', error.message);
@@ -74,7 +74,7 @@ export async function deactivate(req, res) {
 // POST /officers/:id/reactivate
 export async function reactivate(req, res) {
     try {
-        await userModel.setOfficerActive(req.params.id, 1);
+        await userModel.setOfficerActive(req.params.id, true);
         res.json({ message: 'Officer reactivated successfully' });
     } catch (error) {
         console.error('Error reactivating officer:', error.message);

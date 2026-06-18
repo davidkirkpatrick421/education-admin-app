@@ -3,7 +3,7 @@ import { query } from '../db/pool.js';
 // Active user by email (used for login).
 export async function findActiveByEmail(email) {
     const rows = await query(
-        `SELECT * FROM users WHERE email = ? AND is_active = 1`,
+        `SELECT * FROM users WHERE email = $1 AND is_active = TRUE`,
         [email]
     );
     return rows[0] || null;
@@ -13,7 +13,7 @@ export async function findActiveByEmail(email) {
 export async function listOfficers() {
     return query(
         `SELECT id, email, first_name, surname, is_active, created_at
-        FROM users WHERE role = ?`,
+        FROM users WHERE role = $1`,
         ['officer']
     );
 }
@@ -22,7 +22,7 @@ export async function listOfficers() {
 export async function listActiveOfficers() {
     return query(
         `SELECT id, first_name, surname FROM users
-        WHERE role = ? AND is_active = 1`,
+        WHERE role = $1 AND is_active = TRUE`,
         ['officer']
     );
 }
@@ -30,16 +30,16 @@ export async function listActiveOfficers() {
 // Count of active officers (admin stats).
 export async function countActiveOfficers() {
     const rows = await query(
-        `SELECT * FROM users WHERE role = ? AND is_active = 1`,
+        `SELECT COUNT(*)::int AS count FROM users WHERE role = $1 AND is_active = TRUE`,
         ['officer']
     );
-    return rows.length;
+    return rows[0].count;
 }
 
 export async function createOfficer(email, firstName, surname, hashedPassword) {
     return query(
         `INSERT INTO users (email, first_name, surname, password, role)
-        VALUES (?, ?, ?, ?, ?)`,
+        VALUES ($1, $2, $3, $4, $5)`,
         [email, firstName, surname, hashedPassword, 'officer']
     );
 }
@@ -47,7 +47,7 @@ export async function createOfficer(email, firstName, surname, hashedPassword) {
 export async function findOfficerById(id) {
     const rows = await query(
         `SELECT id, email, first_name, surname, is_active
-        FROM users WHERE id = ? AND role = ?`,
+        FROM users WHERE id = $1 AND role = $2`,
         [id, 'officer']
     );
     return rows[0] || null;
@@ -55,15 +55,15 @@ export async function findOfficerById(id) {
 
 export async function updateOfficer(id, email, firstName, surname) {
     return query(
-        `UPDATE users SET email = ?, first_name = ?, surname = ?
-        WHERE id = ? AND role = ?`,
+        `UPDATE users SET email = $1, first_name = $2, surname = $3
+        WHERE id = $4 AND role = $5`,
         [email, firstName, surname, id, 'officer']
     );
 }
 
 export async function setOfficerActive(id, isActive) {
     return query(
-        `UPDATE users SET is_active = ? WHERE id = ? AND role = ?`,
+        `UPDATE users SET is_active = $1 WHERE id = $2 AND role = $3`,
         [isActive, id, 'officer']
     );
 }
