@@ -26,6 +26,96 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
+}
+
+/* Sticky-note demo credentials, tucked onto the top-right corner of the card */
+.demo-note {
+    position: absolute;
+    top: -1.75rem;
+    right: -9rem;
+    z-index: 10;
+    width: 215px;
+    padding: 0.9rem 1.05rem 1rem;
+    background-color: #fff7c0;
+    color: #3a3622;
+    border-radius: 3px;
+    box-shadow: 0 8px 16px rgba(41, 41, 41, 0.35);
+    transform: rotate(-4deg);
+}
+
+/* a strip of "tape" across the top */
+.demo-note::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 80px;
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.demo-note-title {
+    color: rgb(39, 41, 109);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.15rem;
+}
+
+.demo-note-sub {
+    font-size: 0.72rem;
+    margin: 0 0 0.5rem;
+}
+
+.demo-cred {
+    display: flex;
+    flex-direction: column;
+    padding: 0.3rem 0;
+    border-top: 1px dashed rgba(58, 54, 34, 0.3);
+}
+
+.demo-cred-role {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgb(39, 41, 109);
+}
+
+.demo-cred-vals {
+    font-size: 0.72rem;
+    word-break: break-word;
+}
+
+.demo-cred-vals code {
+    color: #3a3622;
+    background-color: rgba(0, 0, 0, 0.06);
+    padding: 1px 3px;
+    border-radius: 3px;
+}
+
+.demo-note-foot {
+    font-size: 0.66rem;
+    line-height: 1.35;
+    margin: 0.6rem 0 0;
+    padding-top: 0.5rem;
+    border-top: 1px dashed rgba(58, 54, 34, 0.3);
+}
+
+/* On phones, drop the overlap: place the note in normal flow under the form */
+@media (max-width: 575.98px) {
+    .demo-note {
+        position: static;
+        width: auto;
+        margin-top: 1.25rem;
+        transform: none;
+    }
+
+    .demo-note::before {
+        display: none;
+    }
 }
 
 .loginContainer {
