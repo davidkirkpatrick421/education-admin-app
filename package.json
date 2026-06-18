@@ -8,7 +8,9 @@
     "dev:api": "nodemon src/api/server.js",
     "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
     "start:web": "node src/web/server.js",
-    "start:api": "node src/api/server.js"
+    "start:api": "node src/api/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "vitest": "^4.1.9"
   }
 }
