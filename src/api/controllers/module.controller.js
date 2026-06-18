@@ -1,7 +1,16 @@
 import * as moduleModel from '../models/moduleResult.model.js';
 import * as classificationModel from '../models/classificationResult.model.js';
+import { requireFields, validMark, validCredits, validYearOfStudy } from '../lib/validate.js';
 
 const checkbox = (value) => (value === 'on' ? 1 : 0);
+
+// Validate a module result payload; returns an error message or null.
+function validateModule(body) {
+    return requireFields(body, ['module_code', 'module_name', 'mark', 'year_of_study', 'credits'])
+        || validMark(body.mark)
+        || validCredits(body.credits)
+        || validYearOfStudy(body.year_of_study);
+}
 
 // Guard: module results cannot change once a classification is confirmed.
 async function isClassificationConfirmed(studentId) {
@@ -14,6 +23,11 @@ export async function upsert(req, res) {
     const studentId = req.params.id;
     const { module_code, module_name, mark, year_of_study, credits } = req.body;
     const is_resit = checkbox(req.body.is_resit);
+
+    const validationError = validateModule(req.body);
+    if (validationError) {
+        return res.status(400).json({ error: validationError });
+    }
 
     try {
         if (await isClassificationConfirmed(studentId)) {
@@ -54,6 +68,11 @@ export async function update(req, res) {
     const moduleId = req.params.module_id;
     const { module_code, module_name, mark, year_of_study, credits } = req.body;
     const is_resit = checkbox(req.body.is_resit);
+
+    const validationError = validateModule(req.body);
+    if (validationError) {
+        return res.status(400).json({ error: validationError });
+    }
 
     try {
         if (await isClassificationConfirmed(studentId)) {

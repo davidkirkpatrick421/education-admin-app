@@ -2,6 +2,7 @@ import * as studentModel from '../models/student.model.js';
 import * as moduleModel from '../models/moduleResult.model.js';
 import * as classificationModel from '../models/classificationResult.model.js';
 import * as programmeModel from '../models/programme.model.js';
+import { requireFields } from '../lib/validate.js';
 
 // Convert an HTML checkbox value ('on' / undefined) to a 1/0 flag.
 const checkbox = (value) => (value === 'on' ? 1 : 0);
@@ -36,6 +37,12 @@ export async function exportByProgramme(req, res) {
 // POST /officer/students — add a new student.
 export async function create(req, res) {
     const { student_number, first_name, surname, programme_id, academic_year } = req.body;
+
+    const validationError = requireFields(req.body, ['student_number', 'first_name', 'surname', 'programme_id', 'academic_year']);
+    if (validationError) {
+        return res.status(400).json({ error: validationError });
+    }
+
     try {
         await studentModel.create({
             student_number, first_name, surname, programme_id, academic_year,

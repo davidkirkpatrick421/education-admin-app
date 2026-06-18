@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import * as userModel from '../models/user.model.js';
+import { requireFields, validEmail } from '../lib/validate.js';
 
 // GET /officers — list all officers for the admin dashboard.
 export async function list(req, res) {
@@ -15,6 +16,14 @@ export async function list(req, res) {
 // POST /officers — create a new officer.
 export async function create(req, res) {
     const { email, first_name, surname, password } = req.body;
+
+    const validationError = requireFields(req.body, ['email', 'first_name', 'surname', 'password'])
+        || validEmail(email)
+        || (password.length < 8 ? 'Password must be at least 8 characters' : null);
+    if (validationError) {
+        return res.status(400).json({ error: validationError });
+    }
+
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         await userModel.createOfficer(email, first_name, surname, hashedPassword);

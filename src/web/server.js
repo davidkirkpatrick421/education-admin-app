@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { attachUserLocals } from './middleware/auth.js';
+import { requestContext } from './lib/requestContext.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import officerRoutes from './routes/officer.routes.js';
@@ -56,6 +57,12 @@ web.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
 // Expose the current user (and officer's active programme) to all views.
 web.use(attachUserLocals);
+
+// Bind the session user to the async request context so outbound API calls
+// can be signed with a per-user internal token (see apiClient.js).
+web.use((req, res, next) => {
+    requestContext.run({ user: req.session.user || null }, next);
+});
 
 // Feature routers.
 web.use('/', authRoutes);
