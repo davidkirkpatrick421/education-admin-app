@@ -1,0 +1,52 @@
+# Production deployment compose (runs on the Linux server).
+# Pulls the prebuilt image from GHCR instead of building locally.
+# No host ports are published: Cloudflare Tunnel reaches the web service over
+# the internal Docker network, so the server has zero open inbound ports.
+#
+# Secrets are interpolated from the environment (the GitHub Actions deploy job
+# provides them from repository secrets): DATABASE_URL, SESSION_SECRET,
+# INTERNAL_JWT_SECRET, TUNNEL_TOKEN.
+
+services:
+  web:
+    image: ghcr.io/davidkirkpatrick421/hedclass:latest
+    command: node src/web/server.js
+    environment:
+      - NODE_ENV=production
+      - WEB_PORT=4000
+      - API_URL=http://api:5000
+      - SESSION_SECRET=${SESSION_SECRET}
+      - INTERNAL_JWT_SECRET=${INTERNAL_JWT_SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api:
+    image: ghcr.io/davidkirkpatrick421/hedclass:latest
+    command: node src/api/server.js
+    # Internal only — never published to the host.
+    environment:
+      - NODE_ENV=production
+      - API_PORT=5000
+      - INTERNAL_JWT_SECRET=${INTERNAL_JWT_SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # Cloudflare Tunnel: the only egress to the public internet. Configure the
+  # tunnel's public hostname in the Cloudflare dashboard to point at
+  # http://web:4000 (resolved over this compose network).
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      - web
+    restart: unless-stopped
