@@ -1,16 +1,27 @@
 
 
 body {
+    background-color: rgb(39, 41, 109);
+}
+
+/* Fixed background image on its own layer — far cheaper for Safari to paint
+   than background-attachment: fixed, while keeping the same fixed look. */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-image: url('/assets/universityBG.jpg');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
-    background-color: rgb(39, 41, 109);
     background-repeat: no-repeat;
-    
+    z-index: -2;
 }
 
-body::before {
+/* Navy tint over the image. */
+body::after {
     content: "";
     position: fixed;
     top: 0;

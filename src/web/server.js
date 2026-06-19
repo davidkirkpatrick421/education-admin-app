@@ -25,12 +25,16 @@ web.set('trust proxy', 1);
 // Security headers. CSP allows the jsDelivr CDN (Bootstrap + Chart.js) and
 // inline styles (Bootstrap and template style attributes); scripts stay strict
 // ('self' + CDN only, no inline) since the chart script is externalised.
+// upgrade-insecure-requests is enabled only in production: in local HTTP dev it
+// makes Safari upgrade same-origin asset requests to https and fail to load them.
+const isProduction = process.env.NODE_ENV === 'production';
 web.use(helmet({
     contentSecurityPolicy: {
         directives: {
             scriptSrc: ["'self'", 'https://cdn.jsdelivr.net'],
             styleSrc: ["'self'", 'https://cdn.jsdelivr.net', "'unsafe-inline'"],
             imgSrc: ["'self'", 'data:'],
+            upgradeInsecureRequests: isProduction ? [] : null,
         },
     },
 }));
@@ -49,7 +53,11 @@ web.use(session({
 web.set('view engine', 'ejs');
 web.set('views', path.join(__dirname, 'views'));
 
-web.use(express.static(path.join(__dirname, '/public')));
+// Serve static assets with revalidation so updated CSS/JS is always picked up
+// (browsers send a conditional request and get a cheap 304 when unchanged).
+web.use(express.static(path.join(__dirname, '/public'), {
+    setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache'),
+}));
 web.use(express.urlencoded({ extended: true }));
 
 // Liveness probe (used by Docker/monitoring).
